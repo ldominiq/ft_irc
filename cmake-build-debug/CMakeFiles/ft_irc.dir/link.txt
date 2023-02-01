@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/ft_irc.dir/main.cpp.o -o ft_irc 
