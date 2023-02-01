@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     if (sockfd < 0)
         handle_error("Error establishing connection.");
 
-    std::cout << green << "| socket() is OK ! |" << def << std::endl;
+    //std::cout << green << "| socket() is OK ! |" << def << std::endl;
     std::cout << green << "Server Socket connection created..." << def << std::endl;
 
     // 2. Bind the socket = bind()
@@ -75,13 +75,13 @@ int main(int argc, char **argv) {
     if (bind(sockfd, (struct sockaddr*)&server_addr, addr_size) < 0)
         handle_error("Error binding socket.");
 
-    std::cout << blue << "| bind() is OK ! |" << def << std::endl;
+    //std::cout << blue << "| bind() is OK ! |" << def << std::endl;
 
     // 3. Listen on the socket - listen()
     if (listen(sockfd, 1) < 0)
         perror("Error while listening.");
     else {
-        std::cout << blue << "| listen() is OK ! |" << def << std::endl;
+        //std::cout << blue << "| listen() is OK ! |" << def << std::endl;
         std::cout << blue << "Looking for clients..." << def << std::endl;
     }
 
@@ -94,8 +94,18 @@ int main(int argc, char **argv) {
 
     std::cout << green << "Accepted connection !" << def << std::endl;
 
-    // 5. Send and receive data - recv(), send(), recvfrom(), sendto()
+    // 5. Send and receive data - recv(), send()
+    char buffer[200] = "";
+    int byte_count = recv(servfd, buffer, 200, 0);
 
+    if (byte_count > 0)
+        std::cout << "Message received: " << buffer << std::endl;
+
+    char confirmation[200] = "Message received";
+    byte_count = send(servfd, confirmation, 200, 0);
+
+    if (byte_count > 0)
+        std::cout << "Automated Message sent to the Client" << std::endl;
 
     // 6. Disconnect - closesocket()
     close(sockfd);
