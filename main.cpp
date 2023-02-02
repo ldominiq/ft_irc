@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define BUF_SIZE 200
+#define BUF_SIZE 1024
 
 namespace Color {
     enum Code {
@@ -100,7 +100,9 @@ int main(int argc, char **argv) {
 
     client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
     if (client_fd < 0)
-        handle_error("Error on accepting.");
+        handle_error("Error on client connecting.");
+
+    close(listening_fd);
 
 //    char host[NI_MAXHOST];      // Client's remote name
 //    char service[NI_MAXSERV];    // Service (i.e. port) the client is connected on
@@ -129,13 +131,18 @@ int main(int argc, char **argv) {
 
         // Wait for client to send data
         ssize_t bytes_received = recv(client_fd, buffer, BUF_SIZE, 0);
+
+        if (bytes_received == -1) {
+            std::cout << red << "Connection issue" << std::endl;
+            break;
+        }
+
         if (bytes_received == 0) {
             std::cout << blue << "Client disconnected" << std::endl;
             break;
         }
 
-        if (bytes_received > 0)
-            std::cout << "Message received: " << buffer << std::endl;
+        std::cout << "Message received: " << buffer << std::endl;
 
         // Echo message back to client
 
@@ -148,7 +155,7 @@ int main(int argc, char **argv) {
     }
 
     // 6. Disconnect - close()
-    close(listening_fd);
+    close(client_fd);
     std::cout << red << "Server Socket connection closed..." << def << std::endl;
     std::cout << "Goodbye..." << std::endl;
     return 0;
