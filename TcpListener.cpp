@@ -30,30 +30,34 @@ void TcpListener::Run() {
         if (client_fd != -1) {
             close(listening_fd);
 
-            memset(buffer, 0, BUF_SIZE);
+            this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
+
+
+//            memset(buffer, 0, BUF_SIZE);
 
             // Wait for client to send data
-            ssize_t bytes_received;
-
-            do {
-                bytes_received = recv(client_fd, buffer, BUF_SIZE, 0);
-
-                if (bytes_received == -1) {
-                    std::cout << "Connection issue" << std::endl;
-                    break;
-                }
-                else if (bytes_received == 0) {
-                    std::cout << "Client disconnected" << std::endl;
-                    break;
-                }
-
-                std::cout << "Message received: " << buffer << std::endl;
-
-                MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
-
-            } while (bytes_received > 0);
-
-            close(client_fd);
+//            ssize_t bytes_received;
+//
+//            do {
+//                bytes_received = recv(client_fd, buffer, BUF_SIZE, 0);
+//
+//                if (bytes_received == -1) {
+//                    std::cout << "Connection issue" << std::endl;
+//                    break;
+//                }
+//                else if (bytes_received == 0) {
+//                    std::cout << "Client disconnected" << std::endl;
+//                    break;
+//                }
+//
+//                std::cout << "Message received: " << buffer << std::endl;
+//
+//                //if (strncmp("CAP ", buffer, 4) != 0)
+//                    //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
+//
+//            } while (bytes_received > 0);
+//
+//            close(client_fd);
         }
     }
     //std::cout << "Server Socket connection closed..." << std::endl;
@@ -66,10 +70,10 @@ int TcpListener::_CreateSocket() const {
     const int enable = 1;
     if (setsockopt(listening_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
                    &enable, sizeof(int)) < 0)
-        handle_error("Error setting socket options.");
+        _handle_error("Error setting socket options.");
 
     if (listening_fd < 0)
-        handle_error("Error establishing connection.");
+        _handle_error("Error establishing connection.");
 
     std::cout << "Server Socket connection created..." << std::endl;
 
@@ -83,7 +87,7 @@ int TcpListener::_CreateSocket() const {
     addr_size = sizeof(server_addr);
 
     if (bind(listening_fd, (struct sockaddr*)&server_addr, addr_size) < 0)
-        handle_error("Error binding socket.");
+        _handle_error("Error binding socket.");
 
     if (listen(listening_fd, 1) < 0) {
         perror("Error while listening.");
@@ -103,20 +107,25 @@ int TcpListener::_WaitForConnection(int listening_fd) {
 
     client_addr_size = sizeof(client_addr);
 
+    std::cout << "===DEBUG===" << "_WaitForConnection()" << std::endl;
+
     client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
     if (client_fd < 0) {
         perror("Error on client connecting.");
         return -1;
     }
 
-    std::cout << inet_ntoa(client_addr.sin_addr) << std::endl;
+    std::cout << "new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
 
     std::cout << "Accepted connection !" << std::endl;
+
+    std::string welcome = "Welcome !";
+    MessageHandler::HandleMessage(client_fd, welcome);
 
     return client_fd;
 }
 
-void TcpListener::handle_error(const char *msg) {
+void TcpListener::_handle_error(const char *msg) {
     perror(msg);
     exit(EXIT_FAILURE);
 }

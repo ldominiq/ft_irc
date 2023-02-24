@@ -9,9 +9,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <map>
 
 #include "MessageHandler.hpp"
 #include "Modifier.hpp"
+#include "Client.hpp"
 
 #define BUF_SIZE 1024
 
@@ -31,10 +33,11 @@ public:
 private:
     int             _CreateSocket() const;
     static int      _WaitForConnection(int listening_fd);
-    static void            handle_error(const char *msg);
+    static void     _handle_error(const char *msg);
 
-    std::string     _ipAddress;
-    int             _port;
+    std::string                 _ipAddress;
+    int                         _port;
+    std::map<int, Client *>     _clients;
 };
 
 #endif //TCPLISTENER_HPP
