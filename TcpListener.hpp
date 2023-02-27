@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/poll.h>
 #include <map>
 
 #include "MessageHandler.hpp"
@@ -32,7 +34,7 @@ public:
 
 private:
     int             _CreateSocket() const;
-    static int      _WaitForConnection(int listening_fd);
+    static int      _WaitForConnection(int listening_fd, struct pollfd *fds);
     static void     _handle_error(const char *msg);
 
     std::string                 _ipAddress;
