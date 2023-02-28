@@ -34,7 +34,7 @@ public:
 
 private:
     int             _CreateSocket() const;
-    static int      _WaitForConnection(int listening_fd, struct pollfd *fds);
+    void            _WaitForConnection(int listening_fd, struct pollfd *fds);
     static void     _handle_error(const char *msg);
 
     std::string                 _ipAddress;

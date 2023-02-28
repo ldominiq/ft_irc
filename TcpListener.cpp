@@ -19,8 +19,7 @@ void TcpListener::Send(int clientSocket, const std::string& msg) {
 }
 
 void TcpListener::Run() {
-    int                 listening_fd = -1;
-    int                 client_fd = -1;
+    int                 listening_fd;
     struct pollfd       fds[10];
 
     while (true) {
@@ -28,19 +27,14 @@ void TcpListener::Run() {
         if (listening_fd == -1)
             break;
 
-        client_fd = _WaitForConnection(listening_fd, fds);
-        if (client_fd != -1) {
-            close(listening_fd);
-
-            this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
-        }
+        _WaitForConnection(listening_fd, fds);
     }
     //std::cout << "Server Socket connection closed..." << std::endl;
     std::cout << "Goodbye..." << std::endl;
 }
 
 int TcpListener::_CreateSocket() const {
-    int                 listening_fd = -1;
+    int                 listening_fd;
     const int           enable = 1;
     struct sockaddr_in  server_addr;
 
@@ -94,14 +88,13 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
-int TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
+void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
     struct sockaddr_in  client_addr;
     socklen_t           client_addr_size;
     int                 client_fd = -1;
 
     bool    end_server = false;
     int     nfds = 1;
-    int     close_conn;
     char    buffer[BUF_SIZE];
     ssize_t bytes_received;
 
@@ -150,48 +143,26 @@ int TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 break;
             }
             if (fds[i].fd == listening_fd) {
-                /*******************************************************/
-                /* Listening descriptor is readable.                   */
-                /*******************************************************/
                 std::cout << "Listening socket is readable" << std::endl;
 
-                /*******************************************************/
-                /* Accept all incoming connections that are            */
-                /* queued up on the listening socket before we         */
-                /* loop back and call poll again.                      */
-                /*******************************************************/
-                do {
-                    /*****************************************************/
-                    /* Accept each incoming connection. If               */
-                    /* accept fails with EWOULDBLOCK, then we            */
-                    /* have accepted all of them. Any other              */
-                    /* failure on accept will cause us to end the        */
-                    /* server.                                           */
-                    /*****************************************************/
-                    client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
-                    if (client_fd < 0) {
-                        perror("Error on client connecting.");
-                        break;
-                        //return -1;
-                    }
+                client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
+                if (client_fd < 0) {
+                    perror("Error on client connecting.");
+                    break;
+                }
 
-                    /*****************************************************/
-                    /* Add the new incoming connection to the            */
-                    /* pollfd structure                                  */
-                    /*****************************************************/
-                    std::cout << "Accepted new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
-                    fds[nfds].fd = client_fd;
-                    fds[nfds].events = POLLIN;
-                    nfds++;
+                /*****************************************************/
+                /* Add the new incoming connection to the            */
+                /* pollfd structure                                  */
+                /*****************************************************/
+                std::cout << "Accepted new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
+                fds[nfds].fd = client_fd;
+                fds[nfds].events = POLLIN;
+                nfds++;
+                this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
 
-                    std::string welcome = "Welcome !";
-                    MessageHandler::HandleMessage(client_fd, welcome);
-
-                    /*****************************************************/
-                    /* Loop back up and accept another incoming          */
-                    /* connection                                        */
-                    /*****************************************************/
-                } while (client_fd != -1);
+                std::string welcome = "Welcome !";
+                MessageHandler::HandleMessage(client_fd, welcome);
             }
 
             /*********************************************************/
@@ -200,12 +171,7 @@ int TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
             /*********************************************************/
             else {
                 std::cout << "Descriptor: " << fds[i].fd << " is readable" << std::endl;
-                close_conn = false;
 
-                /*******************************************************/
-                /* Receive all incoming data on this socket            */
-                /* before we loop back and call poll again.            */
-                /*******************************************************/
                 memset(buffer, 0, BUF_SIZE);
 
                 //Wait for client to send data
@@ -222,7 +188,10 @@ int TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 /*****************************************************/
                 if (bytes_received == 0) {
                     std::cout << "Client disconnected" << std::endl;
-                    close_conn = true;
+                    close(fds[i].fd);
+                    fds[i] = fds[nfds - 1];
+                    this->_clients.erase(fds[i].fd);
+                    nfds--;
                     break;
                 }
                 std::cout << bytes_received << " bytes received." << std::endl;
@@ -232,12 +201,14 @@ int TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 //if (strncmp("CAP ", buffer, 4) != 0)
                     //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
 
-            }
+            } /* End of existing connection is readable             */
+        } /* End of loop through pollable descriptors              */
+    } while (!end_server); /* End of serving running.    */
 
-        }
-    } while (!end_server);
-
-    return client_fd;
+    for (int i = 0; i < nfds; i++) {
+        if (fds[i].fd >= 0)
+            close(fds[i].fd);
+    }
 }
 
 void TcpListener::_handle_error(const char *msg) {
