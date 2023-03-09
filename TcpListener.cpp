@@ -49,7 +49,7 @@ int TcpListener::_CreateSocket() const {
     /*************************************************************/
     /* Allow socket descriptor to be reuseable                   */
     /*************************************************************/
-    if (setsockopt(listening_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+    if (setsockopt(listening_fd, SOL_SOCKET, SO_REUSEADDR,
                    &enable, sizeof(int)) < 0)
         _handle_error("Error setting socket options.");
 
@@ -139,6 +139,9 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
             /*********************************************************/
             if (fds[i].revents != POLLIN) {
                 std::cout << "Error! revents = " << fds[i].revents << std::endl;
+
+				std::cout << POLLIN << std::endl;
+
                 end_server = true;
                 break;
             }
