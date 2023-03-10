@@ -12,11 +12,11 @@
 
 class Client {
 public:
-    Client();
     Client(int fd);
     ~Client();
 
 private:
+	Client();
     int                                 _clientFd;
     std::string                         _nickname;
     std::string                         _username;
