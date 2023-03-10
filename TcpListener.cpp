@@ -103,7 +103,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
     /*************************************************************/
     /* Initialize the pollfd structure                           */
     /*************************************************************/
-    memset(fds, 0 , sizeof(fds));
+    memset(fds, 0 , sizeof(*fds));
 
     /*************************************************************/
     /* Set up the initial listening socket                        */
@@ -116,7 +116,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
     /* on any of the connected sockets.                          */
     /*************************************************************/
     do {
-        std::cout << "===DEBUG===" << "Waiting on poll()..." << std::endl;
+		print_debug("Waiting on poll()...");
         if (poll(fds, nfds, -1) < 0)
             _handle_error("poll() failed");
 
@@ -133,20 +133,11 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
             if (fds[i].revents == 0)
                 continue;
 
-            /*********************************************************/
-            /* If revents is not POLLIN, it's an unexpected result,  */
-            /* log and end the server.                               */
-            /*********************************************************/
-            if (fds[i].revents != POLLIN) {
-                std::cout << "Error! revents = " << fds[i].revents << std::endl;
-
-				std::cout << POLLIN << std::endl;
-
-                end_server = true;
-                break;
-            }
+			/*********************************************************/
+			/* listening socket, therefore there is a new connection */
+			/*********************************************************/
             if (fds[i].fd == listening_fd) {
-                std::cout << "Listening socket is readable" << std::endl;
+                print_debug("Listening socket is readable");
 
                 client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
                 if (client_fd < 0) {
@@ -161,10 +152,12 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 std::cout << "Accepted new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
                 fds[nfds].fd = client_fd;
                 fds[nfds].events = POLLIN;
+                fds[nfds].revents = 0;
                 nfds++;
                 this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
 
                 std::string welcome = "Welcome !";
+				print_debug(welcome);
                 MessageHandler::HandleMessage(client_fd, welcome);
             }
 
