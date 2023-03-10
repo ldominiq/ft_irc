@@ -32,6 +32,11 @@ public:
     // Main processing loop
     void Run();
 
+	template<typename T>
+	void	print_debug(T message) {
+		std::cout << "===DEBUG===: " << message << std::endl;
+	}
+
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd, struct pollfd *fds);
