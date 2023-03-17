@@ -29,7 +29,6 @@ void TcpListener::Run() {
 
         _WaitForConnection(listening_fd, fds);
     }
-    //std::cout << "Server Socket connection closed..." << std::endl;
     std::cout << "Goodbye..." << std::endl;
 }
 
@@ -156,7 +155,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 nfds++;
                 this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
 
-                std::string welcome = "Welcome !";
+                std::string welcome = "gigacoolchat v0.1";
 				print_debug(welcome);
                 MessageHandler::HandleMessage(client_fd, welcome);
             }
@@ -193,6 +192,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 std::cout << bytes_received << " bytes received." << std::endl;
                 std::cout << "Message received: " << buffer << std::endl;
 
+				process_msg(buffer);
                 MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
                 //if (strncmp("CAP ", buffer, 4) != 0)
                     //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));

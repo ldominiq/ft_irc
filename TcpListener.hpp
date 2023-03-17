@@ -41,6 +41,7 @@ private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd, struct pollfd *fds);
     static void     _handle_error(const char *msg);
+	void			_process_msg(std::string msg);
 
     std::string                 _ipAddress;
     int                         _port;
