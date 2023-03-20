@@ -190,10 +190,11 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                     break;
                 }
                 std::cout << bytes_received << " bytes received." << std::endl;
-                std::cout << "Message received: " << buffer << std::endl;
+                std::cout << "Message received: " << std::endl
+				<< buffer << std::endl;
 
 				_process_msg(buffer, fds[nfds].fd);
-                MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
+//                MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
                 //if (strncmp("CAP ", buffer, 4) != 0)
                     //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
 
@@ -212,12 +213,19 @@ void TcpListener::_process_msg(std::string msg, int c_fd)
 	for (int i = 0; i < msg.size(); i++)
 	{
 		char *current_ptr = (char *) msg.c_str() + i;
-		if (strcmp(current_ptr, "CAP") == 0) { // ITERATE TILL NL OR EOF
-			while (msg[i] != '\n' || msg[i] != msg.back())
+		std::cout << current_ptr << std::endl;
+		if (strncmp("CAP", current_ptr, 3) == 0) { // ITERATE TILL NL OR EOF
+			while (msg[i] != '\n' && msg[i] != '\r' && msg[i] != msg.back())
 				i++; } // TO SKIP CAPABILITY NEGOTIATION
-		else if (strcmp(current_ptr, "NICK") == 0) { // DONT FORGET TO TRIM THE "NICK " AT THE BEGGINNING
+		else if (strncmp("NICK", current_ptr, 4) == 0)
+		{ // DONT FORGET TO TRIM THE "NICK " AT THE BEGGINNING
 			if (!this->_clients[c_fd]->set_nickname(current_ptr, this->_clients))
-				_handle_error("Nickname already taken!"); }
+				_handle_error("Nickname already taken!");
+			std::cout << "got nick: " << this->_clients[c_fd]->get_nick() << std::endl;
+		}
+		else if (strncmp("EXIT", current_ptr, 4) == 0) {
+			exit(-42); // DO SOMETHING ELSE?
+		}
 	}
 }
 

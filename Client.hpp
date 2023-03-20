@@ -15,7 +15,11 @@ public:
     Client(int fd);
     ~Client();
 
-	bool	set_nickname(std::string nick, std::map<int, Client *>     &_clients);
+	bool	set_nickname(const std::string &nick, std::map<int, Client *>     &_clients);
+	std::string get_nick() {
+		if (!_nickname.empty())
+			return _nickname;
+	};
 private:
 	Client();
     int                                 _clientFd;
