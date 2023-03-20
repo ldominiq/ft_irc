@@ -7,6 +7,7 @@
 
 
 #include <string>
+#include <list>
 #include <map>
 #include "Channel.hpp"
 
@@ -15,11 +16,11 @@ public:
     Client(int fd);
     ~Client();
 
-	bool	set_nickname(const std::string &nick, std::map<int, Client *>     &_clients);
+	bool	set_nickname(const std::string &nick, std::list<Client *>     &_clients);
 	std::string get_nick() {
 		if (!_nickname.empty())
-			return _nickname;
-	};
+			return _nickname; else return (NULL);};
+	int get_fd() const { return _clientFd;};
 private:
 	Client();
     int                                 _clientFd;

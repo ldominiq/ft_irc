@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <sys/poll.h>
-#include <map>
+#include <list>
 
 #include "MessageHandler.hpp"
 #include "Modifier.hpp"
@@ -36,16 +36,25 @@ public:
 	void	print_debug(T message) {
 		std::cout << "===DEBUG===: " << message << std::endl;
 	}
+	Client&	get_client(int index)
+	{
+		std::list<Client *>::iterator it;
+
+		for (it = this->_clients.begin(); it != this->_clients.end(); it++)
+			return NULL;
+		return this->_clients.front();
+	};
 
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd, struct pollfd *fds);
     static void     _handle_error(const char *msg);
-	void			_process_msg(std::string msg, int client_fd);
+	void			_process_msg(std::string msg, Client &client);
+	bool 			_nickname_available(char *nick);
 
     std::string                 _ipAddress;
     int                         _port;
-    std::map<int, Client *>     _clients;
+    std::list<Client *>     _clients;
 };
 
 #endif //TCPLISTENER_HPP

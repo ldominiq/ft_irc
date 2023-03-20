@@ -3,6 +3,7 @@
 //
 
 #include "TcpListener.hpp"
+#include "list"
 
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
@@ -153,7 +154,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 fds[nfds].events = POLLIN;
                 fds[nfds].revents = 0;
                 nfds++;
-                this->_clients.insert(std::pair<int, Client *>(client_fd, new Client(client_fd)));
+                this->_clients.push_back(new Client(client_fd));
 
                 std::string welcome = "gigacoolchat v0.1";
 				print_debug(welcome);
@@ -185,7 +186,12 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                     std::cout << "Client disconnected" << std::endl;
                     close(fds[i].fd);
                     fds[i] = fds[nfds - 1];
-                    this->_clients.erase(fds[i].fd);
+					int tmp = fds[i].fd;
+					std::list<Client *>::iterator it = std::find_if(this->_clients.begin(), this->_clients.end(), [tmp](const Client* client) {
+						return client->get_fd() == tmp;
+					});
+					if (it != this->_clients.end()) { this->_clients.erase(it);}
+//                    this->_clients.erase(fds[i].fd);
                     nfds--;
                     break;
                 }
@@ -193,7 +199,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 std::cout << "Message received: " << std::endl
 				<< buffer << std::endl;
 
-				_process_msg(buffer, fds[nfds].fd);
+				_process_msg(buffer, get_client(fds[nfds].fd));
 //                MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
                 //if (strncmp("CAP ", buffer, 4) != 0)
                     //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
@@ -208,7 +214,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
     }
 }
 
-void TcpListener::_process_msg(std::string msg, int c_fd)
+void TcpListener::_process_msg(std::string msg, Client	&client)
 {
 	for (int i = 0; i < msg.size(); i++)
 	{
@@ -216,12 +222,14 @@ void TcpListener::_process_msg(std::string msg, int c_fd)
 		std::cout << current_ptr << std::endl;
 		if (strncmp("CAP", current_ptr, 3) == 0) { // ITERATE TILL NL OR EOF
 			while (msg[i] != '\n' && msg[i] != '\r' && msg[i] != msg.back())
-				i++; } // TO SKIP CAPABILITY NEGOTIATION
+				i++; } // SKIP CAPABILITY NEGOTIATION
 		else if (strncmp("NICK", current_ptr, 4) == 0)
 		{ // DONT FORGET TO TRIM THE "NICK " AT THE BEGGINNING
-			if (!this->_clients[c_fd]->set_nickname(current_ptr, this->_clients))
-				_handle_error("Nickname already taken!");
-			std::cout << "got nick: " << this->_clients[c_fd]->get_nick() << std::endl;
+			if (this->_nickname_available(current_ptr)) {
+				if (!client.set_nickname(current_ptr, this->_clients))
+					_handle_error("other nickname error");
+			}
+			std::cout << "got nick: " << client->get_nick() << std::endl;
 		}
 		else if (strncmp("EXIT", current_ptr, 4) == 0) {
 			exit(-42); // DO SOMETHING ELSE?
@@ -232,4 +240,16 @@ void TcpListener::_process_msg(std::string msg, int c_fd)
 void TcpListener::_handle_error(const char *msg) {
     perror(msg);
     exit(EXIT_FAILURE);
+}
+
+bool TcpListener::_nickname_available(char *nick)
+{
+	std::list<Client *>::iterator it;
+
+	for (it = this->_clients.begin(); it != this->_clients.end(); it++)
+	{
+		if (nick && nick == it)
+			return (false);
+	}
+	return (true);
 }
