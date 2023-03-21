@@ -181,9 +181,7 @@ void TcpListener::_WaitForConnection(int listening_fd) {
                     std::cout << "Client disconnected" << std::endl;
                     close(fds[i].fd);
                     fds[i] = fds[nfds - 1];
-					int tmp = fds[i].fd;
-
-//                    this->_clients.erase(fds[i].fd);
+					delete_client(fds[i].fd);
                     nfds--;
                     break;
                 }
@@ -211,7 +209,7 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 	for (int i = 0; i < msg.size(); i++)
 	{
 		char *current_ptr = (char *) msg.c_str() + i;
-		std::cout << current_ptr << std::endl;
+//		std::cout << current_ptr << std::endl;
 		if (strncmp("CAP", current_ptr, 3) == 0) { // ITERATE TILL NL OR EOF
 			while (msg[i] != '\n' && msg[i] != '\r' && msg[i] != msg.back())
 				i++; } // SKIP CAPABILITY NEGOTIATION
@@ -220,8 +218,9 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 			if (this->_nickname_available(current_ptr)) {
 				if (!client.set_nickname(current_ptr, this->_clients))
 					_handle_error("other nickname error");
+				std::cout << "got nick: " << client.get_nick() << std::endl;
 			}
-			std::cout << "got nick: " << client.get_nick() << std::endl;
+			else { std::cout << "Choose another nickname (send this msg to client instead of printing to server" << std::endl; }
 		}
 		else if (strncmp("EXIT", current_ptr, 4) == 0) {
 			exit(-42); // DO SOMETHING ELSE?

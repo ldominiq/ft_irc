@@ -5,7 +5,6 @@
 #ifndef FT_IRC_CLIENT_HPP
 #define FT_IRC_CLIENT_HPP
 
-
 #include <string>
 #include <list>
 #include <map>
