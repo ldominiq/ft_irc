@@ -3,17 +3,12 @@
 //
 
 #include "TcpListener.hpp"
-#include "list"
 
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
-: _ipAddress(ipAddress), _port(port) {
+: _ipAddress(ipAddress), _port(port) {}
 
-}
-
-TcpListener::~TcpListener() {
-
-}
+TcpListener::~TcpListener() {}
 
 void TcpListener::Send(int clientSocket, const std::string& msg) {
     send(clientSocket, msg.c_str(), msg.size() + 1, 0);
@@ -21,14 +16,13 @@ void TcpListener::Send(int clientSocket, const std::string& msg) {
 
 void TcpListener::Run() {
     int                 listening_fd;
-    struct pollfd       fds[10];
 
     while (true) {
         listening_fd = _CreateSocket();
         if (listening_fd == -1)
             break;
 
-        _WaitForConnection(listening_fd, fds);
+        _WaitForConnection(listening_fd);
     }
     std::cout << "Goodbye..." << std::endl;
 }
@@ -88,10 +82,11 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
-void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
+void TcpListener::_WaitForConnection(int listening_fd) {
     struct sockaddr_in  client_addr;
     socklen_t           client_addr_size;
     int                 client_fd = -1;
+	struct pollfd       fds[10];
 
     bool    end_server = false;
     int     nfds = 1;
@@ -187,10 +182,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                     close(fds[i].fd);
                     fds[i] = fds[nfds - 1];
 					int tmp = fds[i].fd;
-					std::list<Client *>::iterator it = std::find_if(this->_clients.begin(), this->_clients.end(), [tmp](const Client* client) {
-						return client->get_fd() == tmp;
-					});
-					if (it != this->_clients.end()) { this->_clients.erase(it);}
+
 //                    this->_clients.erase(fds[i].fd);
                     nfds--;
                     break;
@@ -199,7 +191,7 @@ void TcpListener::_WaitForConnection(int listening_fd, struct pollfd *fds) {
                 std::cout << "Message received: " << std::endl
 				<< buffer << std::endl;
 
-				_process_msg(buffer, get_client(fds[nfds].fd));
+				_process_msg(buffer, get_client(fds[i].fd));
 //                MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
                 //if (strncmp("CAP ", buffer, 4) != 0)
                     //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
@@ -229,7 +221,7 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 				if (!client.set_nickname(current_ptr, this->_clients))
 					_handle_error("other nickname error");
 			}
-			std::cout << "got nick: " << client->get_nick() << std::endl;
+			std::cout << "got nick: " << client.get_nick() << std::endl;
 		}
 		else if (strncmp("EXIT", current_ptr, 4) == 0) {
 			exit(-42); // DO SOMETHING ELSE?
@@ -248,8 +240,28 @@ bool TcpListener::_nickname_available(char *nick)
 
 	for (it = this->_clients.begin(); it != this->_clients.end(); it++)
 	{
-		if (nick && nick == it)
+		if (nick && nick == ((*it))->get_nick())
 			return (false);
 	}
 	return (true);
+}
+
+void TcpListener::delete_client(int client_fd) {
+    std::list<Client *>::iterator it;
+
+	for (it = this->_clients.begin(); it != this->_clients.end(); it++){
+		if (((*it)->get_fd() == client_fd))
+			this->_clients.erase(it);
+	}
+}
+
+Client& TcpListener::get_client(int client_fd) {
+    std::list<Client*>::iterator it;
+
+    for (it = this->_clients.begin(); it != this->_clients.end(); it++) {
+        if ((*it)->get_fd() == client_fd)
+            return **it;
+    }
+
+    throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }

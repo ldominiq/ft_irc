@@ -18,8 +18,8 @@ public:
 
 	bool	set_nickname(const std::string &nick, std::list<Client *>     &_clients);
 	std::string get_nick() {
-		if (!_nickname.empty())
-			return _nickname; else return (NULL);};
+    	return _nickname.empty() ? "" : _nickname;
+	}
 	int get_fd() const { return _clientFd;};
 private:
 	Client();
