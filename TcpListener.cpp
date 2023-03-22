@@ -3,6 +3,7 @@
 //
 
 #include "TcpListener.hpp"
+#include "utils.hpp"
 
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
@@ -15,7 +16,7 @@ void TcpListener::Send(int clientSocket, const std::string& msg) {
 }
 
 void TcpListener::Run() {
-    int                 listening_fd;
+    int	listening_fd;
 
     while (true) {
         listening_fd = _CreateSocket();
@@ -204,26 +205,40 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     }
 }
 
+
+
 void TcpListener::_process_msg(std::string msg, Client	&client)
 {
 	for (int i = 0; i < msg.size(); i++)
 	{
 		char *current_ptr = (char *) msg.c_str() + i;
-//		std::cout << current_ptr << std::endl;
 		if (strncmp("CAP", current_ptr, 3) == 0) { // ITERATE TILL NL OR EOF
-			while (msg[i] != '\n' && msg[i] != '\r' && msg[i] != msg.back())
-				i++; } // SKIP CAPABILITY NEGOTIATION
+			_skip_line(msg, i); }
 		else if (strncmp("NICK", current_ptr, 4) == 0)
 		{ // DONT FORGET TO TRIM THE "NICK " AT THE BEGGINNING
 			if (this->_nickname_available(current_ptr)) {
 				if (!client.set_nickname(current_ptr, this->_clients))
 					_handle_error("other nickname error");
 				std::cout << "got nick: " << client.get_nick() << std::endl;
-			}
-			else { std::cout << "Choose another nickname (send this msg to client instead of printing to server" << std::endl; }
+			} else { // todo: add <client> to the error message, depending on if registered or not
+				numericReply(client.get_fd(), 433, msg.substr(5) + "Nickname is already in use");
+		}
+			_skip_line(msg, i);
+		}
+		else if (strncmp("USER", current_ptr, 4) == 0) {
+			// DO SOMETHING
+		}
+		else if (strncmp("JOIN", current_ptr, 4) == 0) {
+			// DO SOMETHING
+		}
+		else if (strncmp("PRIVMSG", current_ptr, 7) == 0) {
+			// DO SOMETHING
+		}
+		else if (strncmp("PART", current_ptr, 4) == 0) {
+			// DO SOMETHING
 		}
 		else if (strncmp("EXIT", current_ptr, 4) == 0) {
-			exit(-42); // DO SOMETHING ELSE?
+
 		}
 	}
 }

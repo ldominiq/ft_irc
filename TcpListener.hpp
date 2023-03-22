@@ -16,6 +16,7 @@
 #include "MessageHandler.hpp"
 #include "Modifier.hpp"
 #include "Client.hpp"
+#include "utils.hpp"
 
 #define BUF_SIZE 1024
 

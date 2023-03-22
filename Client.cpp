@@ -14,6 +14,7 @@ Client::~Client()
 
 bool Client::set_nickname(const std::string &nick, std::list<Client *>     &clients)
 {
+	// todo: TRIM THE NICKNAME
 	this->_nickname = nick;
 	std::cout << "Nickname set to " << this->_nickname << std::endl; // REMOVE WHEN DONE DEBUGGING
 	return (true);
