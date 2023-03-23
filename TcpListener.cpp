@@ -200,8 +200,6 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     }
 }
 
-
-
 void TcpListener::_process_msg(std::string msg, Client	&client)
 {
 	if (!client.get_status()) // CONNECTION PROCEDURE
@@ -214,8 +212,10 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 						_handle_error("other nickname error");
 				_skip_line(msg);
 			}
-			else if (strncmp("USER", current_ptr, 4) == 0) {
-				// DO SOMETHING
+			else if (msg.find("USER") == 0) {
+				if (!client.set_userdata(msg))
+					_handle_error("other username error");
+				_skip_line(msg);
 			}
 	}
 }

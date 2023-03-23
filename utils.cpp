@@ -14,12 +14,6 @@ void _skip_line(std::string &msg)
 	}
 }
 
-void numericReply(int client_fd, int numeric, const std::string &message)
-{
-	std::string reply = ":127.0.0.1 " + std::to_string(numeric) + " " + message;
-	TcpListener::Send(client_fd, reply);
-}
-
 #include <regex>
 
 bool is_valid_nick(const std::string& nickname) {

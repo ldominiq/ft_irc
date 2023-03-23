@@ -13,10 +13,10 @@
 #include <sys/poll.h>
 #include <list>
 
-#include "MessageHandler.hpp"
-#include "Modifier.hpp"
-#include "Client.hpp"
 #include "utils.hpp"
+#include "MessageHandler.hpp"
+#include "Client.hpp"
+#include "Modifier.hpp"
 
 #define BUF_SIZE 1024
 
@@ -37,16 +37,16 @@ public:
 	void	print_debug(T message) {
 		std::cout << "===DEBUG===: " << message << std::endl;
 	}
-	void					delete_client(int	client_fd);
-	Client&					get_client(int client_fd);
-	static bool 			_nickname_available(std::string &nick);
+	void			delete_client(int	client_fd);
+	Client&			get_client(int client_fd);
+	bool 			_nickname_available(std::string &nick);
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
     static void     _handle_error(const char *msg);
 	void			_process_msg(std::string msg, Client &client);
 
-    std::string                 _ipAddress = "127.0.0.1";
+    std::string                 _ipAddress;
     int                         _port;
     std::list<Client *>     _clients;
 };

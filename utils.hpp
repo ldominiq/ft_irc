@@ -9,7 +9,6 @@
 #include <string>
 
 void	_skip_line(std::string &msg);
-void	numericReply(int client_fd, int numeric, std::string message);
 bool	is_valid_nick(const std::string& nickname);
 
 #endif //FT_IRC_UTILS_HPP

@@ -9,18 +9,20 @@
 #include <list>
 #include <map>
 #include "Channel.hpp"
+#include "MessageHandler.hpp"
+
+class TcpListener;
 
 class Client {
 public:
     Client(int fd);
     ~Client();
 
-	bool	set_nickname(const std::string &nick, std::list<Client *>     &_clients);
-	std::string get_nick() {
-    	return _nickname.empty() ? "" : _nickname;
-	}
-	int get_fd() const { return _clientFd;};
-	bool get_status() const { return _registered;};
+	bool		set_nickname(const std::string &nick, std::list<Client *>     &_clients, TcpListener	&SERV);
+	bool		set_userdata(const std::string &userdata, TcpListener	&SERV);
+	int			get_fd() const { return _clientFd;};
+	bool		get_status() const { return _registered;};
+	std::string	get_nick() { return _nickname.empty() ? "" : _nickname; }
 private:
 	Client();
 	bool 								_registered;
