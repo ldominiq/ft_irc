@@ -189,12 +189,7 @@ void TcpListener::_WaitForConnection(int listening_fd) {
                 std::cout << bytes_received << " bytes received." << std::endl;
                 std::cout << "Message received: " << std::endl
 				<< buffer << std::endl;
-
 				_process_msg(buffer, get_client(fds[i].fd));
-//                MessageHandler::HandleMessage(fds[i].fd, std::string(buffer, 0, bytes_received));
-                //if (strncmp("CAP ", buffer, 4) != 0)
-                    //MessageHandler::HandleMessage(client_fd, std::string(buffer, 0, bytes_received));
-
             } /* End of existing connection is readable             */
         } /* End of loop through pollable descriptors              */
     } while (!end_server); /* End of serving running.    */
@@ -209,37 +204,19 @@ void TcpListener::_WaitForConnection(int listening_fd) {
 
 void TcpListener::_process_msg(std::string msg, Client	&client)
 {
-	for (int i = 0; i < msg.size(); i++)
+	if (!client.get_status()) // CONNECTION PROCEDURE
 	{
-		char *current_ptr = (char *) msg.c_str() + i;
-		if (strncmp("CAP", current_ptr, 3) == 0) { // ITERATE TILL NL OR EOF
-			_skip_line(msg, i); }
-		else if (strncmp("NICK", current_ptr, 4) == 0)
-		{ // DONT FORGET TO TRIM THE "NICK " AT THE BEGGINNING
-			if (this->_nickname_available(current_ptr)) {
-				if (!client.set_nickname(current_ptr, this->_clients))
-					_handle_error("other nickname error");
-				std::cout << "got nick: " << client.get_nick() << std::endl;
-			} else { // todo: add <client> to the error message, depending on if registered or not
-				numericReply(client.get_fd(), 433, msg.substr(5) + "Nickname is already in use");
-		}
-			_skip_line(msg, i);
-		}
-		else if (strncmp("USER", current_ptr, 4) == 0) {
-			// DO SOMETHING
-		}
-		else if (strncmp("JOIN", current_ptr, 4) == 0) {
-			// DO SOMETHING
-		}
-		else if (strncmp("PRIVMSG", current_ptr, 7) == 0) {
-			// DO SOMETHING
-		}
-		else if (strncmp("PART", current_ptr, 4) == 0) {
-			// DO SOMETHING
-		}
-		else if (strncmp("EXIT", current_ptr, 4) == 0) {
-
-		}
+//			char *current_ptr = (char *) msg.c_str() + i;
+			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
+				_skip_line(msg); }
+			if (msg.find("NICK") == 0){
+					if (!client.set_nickname(msg, this->_clients))
+						_handle_error("other nickname error");
+				_skip_line(msg);
+			}
+			else if (strncmp("USER", current_ptr, 4) == 0) {
+				// DO SOMETHING
+			}
 	}
 }
 
@@ -248,13 +225,11 @@ void TcpListener::_handle_error(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
-bool TcpListener::_nickname_available(char *nick)
+bool TcpListener::_nickname_available(std::string &nick)
 {
 	std::list<Client *>::iterator it;
-
-	for (it = this->_clients.begin(); it != this->_clients.end(); it++)
-	{
-		if (nick && nick == ((*it))->get_nick())
+	for (it = this->_clients.begin(); it != this->_clients.end(); it++){
+		if (!nick.empty() && nick == ((*it))->get_nick())
 			return (false);
 	}
 	return (true);
@@ -279,3 +254,9 @@ Client& TcpListener::get_client(int client_fd) {
 
     throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }
+
+std::string TcpListener::get_ip()
+{
+	return (this->_ipAddress);
+}
+

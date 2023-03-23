@@ -20,8 +20,10 @@ public:
     	return _nickname.empty() ? "" : _nickname;
 	}
 	int get_fd() const { return _clientFd;};
+	bool get_status() const { return _registered;};
 private:
 	Client();
+	bool 								_registered;
     int                                 _clientFd;
     std::string                         _nickname;
     std::string                         _username;

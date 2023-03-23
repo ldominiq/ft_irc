@@ -37,17 +37,16 @@ public:
 	void	print_debug(T message) {
 		std::cout << "===DEBUG===: " << message << std::endl;
 	}
-	void	delete_client(int	client_fd);
-	Client&	get_client(int client_fd);
-
+	void					delete_client(int	client_fd);
+	Client&					get_client(int client_fd);
+	static bool 			_nickname_available(std::string &nick);
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
     static void     _handle_error(const char *msg);
 	void			_process_msg(std::string msg, Client &client);
-	bool 			_nickname_available(char *nick);
 
-    std::string                 _ipAddress;
+    std::string                 _ipAddress = "127.0.0.1";
     int                         _port;
     std::list<Client *>     _clients;
 };
