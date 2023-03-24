@@ -5,6 +5,8 @@
 #include "Client.hpp"
 #include <utility>
 #include <iostream>
+#include <sstream>
+#include "MessageHandler.hpp"
 
 Client::Client(int fd) : _registered(false), _clientFd(fd), _nickname(), _username(), _channels()
 {}
@@ -15,26 +17,28 @@ Client::~Client()
 // todo: test thoroughly, make sure all situations are covered
 bool Client::set_nickname(const std::string &nick, std::list<Client *>     &clients, TcpListener	&SERV)
 {
-	std::string trimmed_nick = nick.substr(5);
-	if (trimmed_nick.length() < 6) { // A.K.A if there is no nickname after the NICK command
+	if (nick.length() < 6) { // A.K.A if there is no nickname after the NICK command
 		MessageHandler::numericReply(_clientFd, 431, "No nickname given");
 		return (false);
 	}
+	std::string trimmed_nick = nick.substr(5);
 	if (!is_valid_nick(trimmed_nick)) {
 		MessageHandler::numericReply(_clientFd, 432, trimmed_nick + " Erroneous nickname");
 		return (false);
 	}
-	if (!SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
+	if (SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
+		this->_nickname = trimmed_nick;
+		return (true);
+	} else
+	{ // todo: figure best way to implement the 'ask again' loop until a valid nickname is given, with this error and all others
 		if (_registered)
-			MessageHandler::numericReply(_clientFd, 433, _username + " " + trimmed_nick + " Nickname is already in use");
+			MessageHandler::numericReply(_clientFd, 433,
+										 _username + " " + trimmed_nick + " Nickname is already in use");
 		else
-			MessageHandler::numericReply(_clientFd, 433, trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
+			MessageHandler::numericReply(_clientFd, 433,
+										 trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
 		return (false);
 	}
-	// todo: TRIM THE NICKNAME & check that the way you store the string is valid
-	this->_nickname = trimmed_nick;
-//	std::cout << "Nickname set to " << this->_nickname << std::endl; // REMOVE WHEN DONE DEBUGGING
-	return (true);
 }
 
 static bool is_valid_username(std::string u) {
@@ -55,19 +59,25 @@ static bool is_valid_username(std::string u) {
 
 bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 {
-	std::istringstream splatout(userdata);
-
 	if (userdata.length() < 6) { // A.K.A if there is nothing after the command
 		MessageHandler::numericReply(_clientFd, 461,
 									 _username + " " + "USER" + " :Not enough parameters");
-		return (false);
-	}
-	std::string u;
-	if (splatout >> u && !is_valid_username(u) { // todo: check that msg format is correct
-		MessageHandler::numericReply(_clientFd, 432, u + " Erroneous nickname");
 		return (false); }
+
+	std::istringstream splitout(userdata);
+	std::string u;
+
+	if (splitout >> u && !is_valid_username(u)) { // todo: check that msg format is correct
+		_username = _nickname } // nickname is a fallback value for username when incorrect
 	else {
-		_username = u; }
+		_username = u;
+		std::cout << _username << std::endl;
+	}
+	if ((splitout >> u && u != "0") || (splitout >> u && u != "*")) { // todo: check that msg format is correct
+		MessageHandler::numericReply(_clientFd, 461,
+									 _username + " " + "USER" + " :Not enough parameters");
+		return (false); }
+	if (splitout >> )
 }
 
 

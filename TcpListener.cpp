@@ -208,15 +208,21 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
 				_skip_line(msg); }
 			if (msg.find("NICK") == 0){
-					if (!client.set_nickname(msg, this->_clients))
+					if (!client.set_nickname(msg, this->_clients, *this))
 						_handle_error("other nickname error");
 				_skip_line(msg);
 			}
 			else if (msg.find("USER") == 0) {
-				if (!client.set_userdata(msg))
+				if (!client.set_userdata(msg, *this))
 					_handle_error("other username error");
 				_skip_line(msg);
 			}
+	}
+	else // all commands after registration
+	{
+		if (msg.find("USER" == 0)) { // todo: maybe use realname (write a getter), instead of nickname in this error message
+			MessageHandler::numericReply(client.get_fd(), 462, client.get_nick() + "You may not reregister");
+		}
 	}
 }
 
@@ -254,9 +260,3 @@ Client& TcpListener::get_client(int client_fd) {
 
     throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }
-
-std::string TcpListener::get_ip()
-{
-	return (this->_ipAddress);
-}
-

@@ -9,7 +9,6 @@
 #include <list>
 #include <map>
 #include "Channel.hpp"
-#include "MessageHandler.hpp"
 
 class TcpListener;
 
