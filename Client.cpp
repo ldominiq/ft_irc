@@ -57,6 +57,10 @@ static bool is_valid_username(std::string u) {
 	return true;
 }
 
+static bool is_valid_realname(std::string n) {
+
+}
+
 bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 {
 	if (userdata.length() < 6) { // A.K.A if there is nothing after the command
@@ -68,7 +72,7 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 	std::string u;
 
 	if (splitout >> u && !is_valid_username(u)) { // todo: check that msg format is correct
-		_username = _nickname } // nickname is a fallback value for username when incorrect
+		_username = _nickname; } // nickname is a fallback value for username when incorrect
 	else {
 		_username = u;
 		std::cout << _username << std::endl;
@@ -77,7 +81,8 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 		MessageHandler::numericReply(_clientFd, 461,
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
-	if (splitout >> )
+	if (splitout >> u && !is_valid_realname(u))
+	{}
 }
 
 
