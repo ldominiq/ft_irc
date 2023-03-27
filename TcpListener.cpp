@@ -166,7 +166,7 @@ void TcpListener::_WaitForConnection(int listening_fd) {
 
                 this->_clients.push_back(new Client(client_fd, hostname));
 
-                std::string welcome = "gigacoolchat v0.1";
+                std::string welcome = "gigacoolchat v0.1\r\n";
 				print_debug(welcome);
                 MessageHandler::HandleMessage(client_fd, welcome);
             }
@@ -215,19 +215,20 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 	if (!client.get_status()) // CONNECTION PROCEDURE
 	{
 //			char *current_ptr = (char *) msg.c_str() + i;
-			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
+			if (msg.find("CAP") == 0) {
 				_skip_line(msg); }
 			if (msg.find("PASS") == 0)
 			{ // todo: dont forget errors here (missing password for ex)
 				std::cout << msg.substr(5, 12) << std::endl;
 				if (msg.substr(5, 12) != "gigacoolchat") {
-					MessageHandler::numericReply(client.get_fd(), 464, "Wrong password");
+					MessageHandler::numericReply(client.get_fd(), "464", "Wrong password");
 					_disconnect_client(client.get_fd());
+					return;
 				}
 				_skip_line(msg);
 			}
 			else {
-				MessageHandler::numericReply(client.get_fd(), 461, "Password required");
+				MessageHandler::numericReply(client.get_fd(), "461", "Password required");
 				_disconnect_client(client.get_fd());
 				return;
 			}
@@ -242,11 +243,16 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 				_skip_line(msg);
 			}
 			client.get_infos();
+
+			MessageHandler::numericReply(client.get_fd(), "001", client.get_nick() + " :Welcome to the <networkname> Network, <nick>[!" + client.get_username() + "@" + client.get_hostname() + "]");
+			MessageHandler::numericReply(client.get_fd(), "002", client.get_nick() + " :Your host is <servername>, running version <version>");
+			MessageHandler::numericReply(client.get_fd(), "003", client.get_nick() + " :This server was created <datetime>");
+			MessageHandler::numericReply(client.get_fd(), "004", client.get_nick() + " <servername> <version> <available user modes> <available channel modes> [<channel modes with a parameter>]");
 	}
 	else // all commands after registration
 	{
 		if (msg.find("USER" == 0)) { // todo: maybe use realname (write a getter), instead of nickname in this error message
-			MessageHandler::numericReply(client.get_fd(), 462, client.get_nick() + "You may not reregister");
+			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + "You may not reregister");
 		}
 	}
 }

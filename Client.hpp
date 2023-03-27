@@ -23,6 +23,7 @@ public:
 	bool		get_status() const { return _registered;};
 	std::string	get_nick() { return _nickname.empty() ? "" : _nickname; }
 	std::string	get_username() { return _username.empty() ? "" : _username; }
+	std::string	get_hostname() { return _hostname.empty() ? "" : _hostname; }
 	void		get_infos();
 private:
 	Client();

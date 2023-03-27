@@ -18,24 +18,24 @@ Client::~Client()
 bool Client::set_nickname(const std::string &nick, std::list<Client *>     &clients, TcpListener	&SERV)
 {
 	if (nick.length() < 6) { // A.K.A if there is no nickname after the NICK command
-		MessageHandler::numericReply(_clientFd, 431, "No nickname given");
+		MessageHandler::numericReply(_clientFd, "431", "No nickname given");
 		return (false);
 	}
 	std::string trimmed_nick = nick.substr(5);
 	if (!is_valid_nick(trimmed_nick)) {
-		MessageHandler::numericReply(_clientFd, 432, trimmed_nick + " Erroneous nickname");
+		MessageHandler::numericReply(_clientFd, "432", trimmed_nick + " Erroneous nickname");
 		return (false);
 	}
 	if (SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
-		this->_nickname = trimmed_nick;
+		this->_nickname = "lucas";
 		return (true);
 	} else
 	{ // todo: figure best way to implement the 'ask again' loop until a valid nickname is given, with this error and all others
 		if (_registered)
-			MessageHandler::numericReply(_clientFd, 433,
+			MessageHandler::numericReply(_clientFd, "433",
 										 _username + " " + trimmed_nick + " Nickname is already in use");
 		else
-			MessageHandler::numericReply(_clientFd, 433,
+			MessageHandler::numericReply(_clientFd, "433",
 										 trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
 		return (false);
 	}
@@ -64,7 +64,7 @@ static bool is_valid_realname(std::string n) {
 bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 {
 	if (userdata.length() < 6) { // A.K.A if there is nothing after the command
-		MessageHandler::numericReply(_clientFd, 461,
+		MessageHandler::numericReply(_clientFd, "461",
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
 
@@ -79,7 +79,7 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 		std::cout << _username << std::endl;
 	}
 	if ((splitout >> u && u != "0") || (splitout >> u && u != "*")) { // todo: check that msg format is correct
-		MessageHandler::numericReply(_clientFd, 461,
+		MessageHandler::numericReply(_clientFd, "461",
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
 	if (splitout >> u && !is_valid_realname(u))
