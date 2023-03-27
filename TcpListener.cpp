@@ -237,7 +237,7 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 						_handle_error("other nickname error");
 				_skip_line(msg);
 			}
-			else if (msg.find("USER") == 0) {
+			if (msg.find("USER") == 0) {
 				if (!client.set_userdata(msg, *this))
 					_handle_error("other username error");
 				_skip_line(msg);
