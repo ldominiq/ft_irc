@@ -48,6 +48,9 @@ bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients,
     }
 }
 
+void Client::set_registered() {
+	this->_registered = true;
+}
 
 static bool is_valid_username(std::string u) {
 	// check length
