@@ -45,10 +45,13 @@ private:
     void            _WaitForConnection(int listening_fd);
     static void     _handle_error(const char *msg);
 	void			_process_msg(std::string msg, Client &client);
+	void			_disconnect_client(int client_fd);
 
     std::string                 _ipAddress;
     int                         _port;
-    std::list<Client *>     _clients;
+    std::list<Client *>     	_clients;
+	int     					_nfds;
+	struct pollfd       		_fds[10];
 };
 
 #endif
