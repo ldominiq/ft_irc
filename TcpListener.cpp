@@ -214,7 +214,6 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 {
 	if (!client.get_status()) // CONNECTION PROCEDURE
 	{
-//			char *current_ptr = (char *) msg.c_str() + i;
 			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
 				_skip_line(msg); }
 			if (msg.find("PASS") == 0)
@@ -236,7 +235,7 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 						_handle_error("other nickname error");
 				_skip_line(msg);
 			}
-			else if (msg.find("USER") == 0) {
+			if (msg.find("USER") == 0) {
 				if (!client.set_userdata(msg, *this))
 					_handle_error("other username error");
 				_skip_line(msg);

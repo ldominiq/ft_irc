@@ -17,17 +17,11 @@ void _skip_line(std::string &msg)
 #include <regex>
 
 bool is_valid_nick(const std::string& nickname) {
-	// The nickname must start with a letter (a-z or A-Z) or one of the allowed special characters (| or [).
-	if (std::regex_match(nickname, std::regex("^[a-zA-Z|\\[]"))) {
-		return false;
-	}
-	// The nickname can be followed by any combination of letters, digits, and allowed special characters.
-	if (std::regex_match(nickname, std::regex("^[a-zA-Z0-9|\\[\\]\\\\`_^{}\\-]*$"))) {
-		return false;
-	}
-	if ((1 <= nickname.length() && nickname.length() <= 9)) {
-		return false;
-	}
-
-	return true;
+    // The nickname must start with a letter (a-z or A-Z) or one of the allowed special characters (| or [).
+    // The nickname can be followed by any combination of letters, digits, and allowed special characters.
+    // The nickname must be between 1 and 9 characters in length.
+	if (!std::regex_match(nickname, std::regex("^[a-zA-Z|[]([a-zA-Z0-9|\\[\\]\\`_^{}\\-]{0,8})?$"))) {
+        return false;
+    }
+    return true;
 }

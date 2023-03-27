@@ -14,35 +14,44 @@ Client::Client(int fd, std::string hostname) : _registered(false), _clientFd(fd)
 Client::~Client()
 {}
 
-// todo: test thoroughly, make sure all situations are covered
-bool Client::set_nickname(const std::string &nick, std::list<Client *>     &clients, TcpListener	&SERV)
-{
-	if (nick.length() < 6) { // A.K.A if there is no nickname after the NICK command
-		MessageHandler::numericReply(_clientFd, 431, "No nickname given");
-		return (false);
-	}
-	std::string trimmed_nick = nick.substr(5);
-	if (!is_valid_nick(trimmed_nick)) {
-		MessageHandler::numericReply(_clientFd, 432, trimmed_nick + " Erroneous nickname");
-		return (false);
-	}
-	if (SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
-		this->_nickname = trimmed_nick;
-		return (true);
-	} else
-	{ // todo: figure best way to implement the 'ask again' loop until a valid nickname is given, with this error and all others
-		if (_registered)
-			MessageHandler::numericReply(_clientFd, 433,
-										 _username + " " + trimmed_nick + " Nickname is already in use");
-		else
-			MessageHandler::numericReply(_clientFd, 433,
-										 trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
-		return (false);
-	}
+bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients, TcpListener &SERV) {
+    if (nick.length() <= 5) {
+        MessageHandler::numericReply(_clientFd, 431, "No nickname given");
+        return false;
+    }
+
+    std::size_t end = nick.find_first_of("\r\n", 5);
+    if (end == std::string::npos) {
+        // Handle the case where the string doesn't contain a newline or carriage return
+        std::cout << "Invalid input string" << std::endl;
+        return false;
+    }
+
+    std::string trimmed_nick = nick.substr(5, end - 5);
+	std::cout << "trimmed nick: " << trimmed_nick << std::endl;
+    if (!is_valid_nick(trimmed_nick)) {
+        std::cout << "Not a valid nickname" << std::endl;
+        MessageHandler::numericReply(_clientFd, 432, trimmed_nick + " Erroneous nickname");
+        return false;
+    }
+
+    if (SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
+        this->_nickname = trimmed_nick;
+        return true;
+    } else {
+        if (_registered) {
+            MessageHandler::numericReply(_clientFd, 433, _username + " " + trimmed_nick + " Nickname is already in use");
+        } else {
+            MessageHandler::numericReply(_clientFd, 433, trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
+        }
+        return false;
+    }
 }
+
 
 static bool is_valid_username(std::string u) {
 	// check length
+	std::cout << "is_valid " << u << std::endl;
 	if (u.length() < 1 || u.length() > 9) {
 		return false;
 	}
@@ -57,13 +66,9 @@ static bool is_valid_username(std::string u) {
 	return true;
 }
 
-static bool is_valid_realname(std::string n) {
-
-}
-
 bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 {
-	if (userdata.length() < 6) { // A.K.A if there is nothing after the command
+	if (userdata.length() <= 5) { // A.K.A if there is nothing after the command
 		MessageHandler::numericReply(_clientFd, 461,
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
@@ -72,20 +77,17 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 	std::istringstream splitout(userdata);
 	std::string u;
 
+	splitout >> u;
 	if (splitout >> u && !is_valid_username(u)) { // todo: check that msg format is correct
 		_username = _nickname; } // nickname is a fallback value for username when incorrect
 	else {
 		_username = u;
 		std::cout << _username << std::endl;
 	}
-	if ((splitout >> u && u != "0") || (splitout >> u && u != "*")) { // todo: check that msg format is correct
-		MessageHandler::numericReply(_clientFd, 461,
-									 _username + " " + "USER" + " :Not enough parameters");
-		return (false); }
-	if (splitout >> u && !is_valid_realname(u))
-	{
-
-	}
+	splitout >> u; splitout >> u;
+	if (!u.empty())
+		_hostname = u;
+	return (true);
 }
 
 void Client::get_infos() {
@@ -93,5 +95,6 @@ void Client::get_infos() {
 	std::cout << "fd: " << this->get_fd() << std::endl;
 	std::cout << "nick: " << this->get_nick() << std::endl;
 	std::cout << "user: " << this->get_username() << std::endl;
+	std::cout << "hostname" << this->get_hostname() << std::endl;
 	std::cout << "status: " << this->get_status() << std::endl;
 }
