@@ -20,6 +20,7 @@ bool is_valid_nick(const std::string& nickname) {
     // The nickname must start with a letter (a-z or A-Z) or one of the allowed special characters (| or [).
     // The nickname can be followed by any combination of letters, digits, and allowed special characters.
     // The nickname must be between 1 and 9 characters in length.
+	// todo: use cpp98 function
 	if (!std::regex_match(nickname, std::regex("^[a-zA-Z|[]([a-zA-Z0-9|\\[\\]\\`_^{}\\-]{0,8})?$"))) {
         return false;
     }
