@@ -83,14 +83,26 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
+void TcpListener::_disconnect_client(int client_fd) {
+	std::cout << "Client disconnected" << std::endl;
+	close(client_fd);
+	for (int i=0; i < _nfds; i++) {
+		if (_fds[i].fd == client_fd) {
+			_fds[i] = _fds[_nfds - 1];
+			break;
+		}
+	}
+	delete_client(client_fd);
+	_nfds--;
+}
+
 void TcpListener::_WaitForConnection(int listening_fd) {
     struct sockaddr_in  client_addr;
     socklen_t           client_addr_size;
     int                 client_fd = -1;
-	struct pollfd       fds[10];
 
     bool    end_server = false;
-    int     nfds = 1;
+    _nfds = 1;
     char    buffer[BUF_SIZE];
     ssize_t bytes_received;
 
@@ -99,13 +111,13 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     /*************************************************************/
     /* Initialize the pollfd structure                           */
     /*************************************************************/
-    memset(fds, 0 , sizeof(*fds));
+    memset(_fds, 0 , sizeof(*_fds));
 
     /*************************************************************/
     /* Set up the initial listening socket                        */
     /*************************************************************/
-    fds[0].fd = listening_fd;
-    fds[0].events = POLLIN;
+    _fds[0].fd = listening_fd;
+    _fds[0].events = POLLIN;
 
     /*************************************************************/
     /* Loop waiting for incoming connects or for incoming data   */
@@ -113,26 +125,26 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     /*************************************************************/
     do {
 		print_debug("Waiting on poll()...");
-        if (poll(fds, nfds, -1) < 0)
+        if (poll(_fds, _nfds, -1) < 0)
             _handle_error("poll() failed");
 
         /***********************************************************/
         /* One or more descriptors are readable.  Need to          */
         /* determine which ones they are.                          */
         /***********************************************************/
-        for (int i = 0; i < nfds; i++) {
+        for (int i = 0; i < _nfds; i++) {
             /*********************************************************/
             /* Loop through to find the descriptors that returned    */
             /* POLLIN and determine whether it's the listening       */
             /* or the active connection.                             */
             /*********************************************************/
-            if (fds[i].revents == 0)
+            if (_fds[i].revents == 0)
                 continue;
 
 			/*********************************************************/
 			/* listening socket, therefore there is a new connection */
 			/*********************************************************/
-            if (fds[i].fd == listening_fd) {
+            if (_fds[i].fd == listening_fd) {
                 print_debug("Listening socket is readable");
 
                 client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
@@ -146,10 +158,10 @@ void TcpListener::_WaitForConnection(int listening_fd) {
                 /* pollfd structure                                  */
                 /*****************************************************/
                 std::cout << "Accepted new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
-                fds[nfds].fd = client_fd;
-                fds[nfds].events = POLLIN;
-                fds[nfds].revents = 0;
-                nfds++;
+                _fds[_nfds].fd = client_fd;
+                _fds[_nfds].events = POLLIN;
+                _fds[_nfds].revents = 0;
+                _nfds++;
                 this->_clients.push_back(new Client(client_fd));
 
                 std::string welcome = "gigacoolchat v0.1";
@@ -162,12 +174,12 @@ void TcpListener::_WaitForConnection(int listening_fd) {
             /* existing connection must be readable                  */
             /*********************************************************/
             else {
-                std::cout << "Descriptor: " << fds[i].fd << " is readable" << std::endl;
+                std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
 
                 memset(buffer, 0, BUF_SIZE);
 
                 //Wait for client to send data
-                bytes_received = recv(fds[i].fd, buffer, BUF_SIZE, 0);
+                bytes_received = recv(_fds[i].fd, buffer, BUF_SIZE, 0);
 
                 if (bytes_received == -1) {
                     std::cout << "Connection issue" << std::endl;
@@ -179,24 +191,20 @@ void TcpListener::_WaitForConnection(int listening_fd) {
                 /* closed by the client                              */
                 /*****************************************************/
                 if (bytes_received == 0) {
-                    std::cout << "Client disconnected" << std::endl;
-                    close(fds[i].fd);
-                    fds[i] = fds[nfds - 1];
-					delete_client(fds[i].fd);
-                    nfds--;
+                    _disconnect_client(_fds[i].fd);
                     break;
                 }
                 std::cout << bytes_received << " bytes received." << std::endl;
                 std::cout << "Message received: " << std::endl
 				<< buffer << std::endl;
-				_process_msg(buffer, get_client(fds[i].fd));
+				_process_msg(buffer, get_client(_fds[i].fd));
             } /* End of existing connection is readable             */
         } /* End of loop through pollable descriptors              */
     } while (!end_server); /* End of serving running.    */
 
-    for (int i = 0; i < nfds; i++) {
-        if (fds[i].fd >= 0)
-            close(fds[i].fd);
+    for (int i = 0; i < _nfds; i++) {
+        if (_fds[i].fd >= 0)
+            close(_fds[i].fd);
     }
 }
 
@@ -207,12 +215,19 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 //			char *current_ptr = (char *) msg.c_str() + i;
 			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
 				_skip_line(msg); }
-			if (msg.find("PASS" == 0))
+			if (msg.find("PASS") == 0)
 			{ // todo: dont forget errors here (missing password for ex)
 				std::cout << msg.substr(5, 12) << std::endl;
-				if (msg.substr(5, 12) != "gigacoolchat")
-					_handle_error("wrong password");
+				if (msg.substr(5, 12) != "gigacoolchat") {
+					MessageHandler::numericReply(client.get_fd(), 464, "Wrong password");
+					_disconnect_client(client.get_fd());
+				}
 				_skip_line(msg);
+			}
+			else {
+				MessageHandler::numericReply(client.get_fd(), 461, "Password required");
+				_disconnect_client(client.get_fd());
+				return;
 			}
 			if (msg.find("NICK") == 0){
 					if (!client.set_nickname(msg, this->_clients, *this))
