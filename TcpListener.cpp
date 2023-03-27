@@ -157,12 +157,14 @@ void TcpListener::_WaitForConnection(int listening_fd) {
                 /* Add the new incoming connection to the            */
                 /* pollfd structure                                  */
                 /*****************************************************/
-                std::cout << "Accepted new connection from: " << inet_ntoa(client_addr.sin_addr) << " on socket: " << client_fd << std::endl;
+				std::string hostname(inet_ntoa(client_addr.sin_addr));
+                std::cout << "Accepted new connection from: " << hostname << " on socket: " << client_fd << std::endl;
                 _fds[_nfds].fd = client_fd;
                 _fds[_nfds].events = POLLIN;
                 _fds[_nfds].revents = 0;
                 _nfds++;
-                this->_clients.push_back(new Client(client_fd));
+
+                this->_clients.push_back(new Client(client_fd, hostname));
 
                 std::string welcome = "gigacoolchat v0.1";
 				print_debug(welcome);
@@ -239,6 +241,7 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 					_handle_error("other username error");
 				_skip_line(msg);
 			}
+			client.get_infos();
 	}
 	else // all commands after registration
 	{

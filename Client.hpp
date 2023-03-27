@@ -14,7 +14,7 @@ class TcpListener;
 
 class Client {
 public:
-    Client(int fd);
+    Client(int fd, std::string hostname);
     ~Client();
 
 	bool		set_nickname(const std::string &nick, std::list<Client *>     &_clients, TcpListener	&SERV);
@@ -22,6 +22,8 @@ public:
 	int			get_fd() const { return _clientFd;};
 	bool		get_status() const { return _registered;};
 	std::string	get_nick() { return _nickname.empty() ? "" : _nickname; }
+	std::string	get_username() { return _username.empty() ? "" : _username; }
+	void		get_infos();
 private:
 	Client();
 	bool 								_registered;
@@ -29,6 +31,7 @@ private:
     std::string                         _nickname;
     std::string                         _username;
     std::map<std::string, Channel *>    _channels;
+	std::string 						_hostname;
 };
 
 

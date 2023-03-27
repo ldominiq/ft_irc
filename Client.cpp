@@ -8,7 +8,7 @@
 #include <sstream>
 #include "MessageHandler.hpp"
 
-Client::Client(int fd) : _registered(false), _clientFd(fd), _nickname(), _username(), _channels()
+Client::Client(int fd, std::string hostname) : _registered(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
 {}
 
 Client::~Client()
@@ -87,4 +87,10 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 	}
 }
 
-
+void Client::get_infos() {
+	std::cout << "CLIENT INFOS" << std::endl;
+	std::cout << "fd: " << this->get_fd() << std::endl;
+	std::cout << "nick: " << this->get_nick() << std::endl;
+	std::cout << "user: " << this->get_username() << std::endl;
+	std::cout << "status: " << this->get_status() << std::endl;
+}
