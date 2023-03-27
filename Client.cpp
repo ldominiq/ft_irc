@@ -82,7 +82,9 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
 	if (splitout >> u && !is_valid_realname(u))
-	{}
+	{
+
+	}
 }
 
 

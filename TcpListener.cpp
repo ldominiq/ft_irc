@@ -207,6 +207,13 @@ void TcpListener::_process_msg(std::string msg, Client	&client)
 //			char *current_ptr = (char *) msg.c_str() + i;
 			if (msg.find("CAP") == 0 || msg.find("PASS") == 0) {
 				_skip_line(msg); }
+			if (msg.find("PASS" == 0))
+			{ // todo: dont forget errors here (missing password for ex)
+				std::cout << msg.substr(5, 12) << std::endl;
+				if (msg.substr(5, 12) != "gigacoolchat")
+					_handle_error("wrong password");
+				_skip_line(msg);
+			}
 			if (msg.find("NICK") == 0){
 					if (!client.set_nickname(msg, this->_clients, *this))
 						_handle_error("other nickname error");
