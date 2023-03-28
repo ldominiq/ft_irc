@@ -49,6 +49,8 @@ private:
 	void			_disconnect_client(int client_fd);
 	void			_registration(std::string msg, Client &client);
 	static void		_connection(Client &client);
+	int 			_handle_new_connection(int listening_fd);
+	int 			_handle_message(int i);
 
     std::string                 _ipAddress;
     int                         _port;
