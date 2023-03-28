@@ -17,6 +17,7 @@
 #include "MessageHandler.hpp"
 #include "Client.hpp"
 #include "Modifier.hpp"
+#include "Numeric_replies.hpp"
 
 #define BUF_SIZE 1024
 
@@ -44,8 +45,10 @@ private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
     static void     _handle_error(const char *msg);
-	void			_process_msg(std::string msg, Client &client);
+	void			_process_msg(const std::string& msg, Client &client);
 	void			_disconnect_client(int client_fd);
+	void			_registration(std::string msg, Client &client);
+	static void		_connection(Client &client);
 
     std::string                 _ipAddress;
     int                         _port;

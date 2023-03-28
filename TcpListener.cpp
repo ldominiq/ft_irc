@@ -5,7 +5,6 @@
 #include "TcpListener.hpp"
 #include "utils.hpp"
 
-
 TcpListener::TcpListener(const std::string& ipAddress, int port)
 : _ipAddress(ipAddress), _port(port) {}
 
@@ -206,54 +205,79 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     }
 }
 
-void TcpListener::_process_msg(std::string msg, Client	&client)
-{
-	if (!client.get_status()) // CONNECTION PROCEDURE
-	{
-//			char *current_ptr = (char *) msg.c_str() + i;
-		if (msg.find("CAP") == 0) {
-			_skip_line(msg); }
-		if (msg.find("PASS") == 0)
-		{ // todo: dont forget errors here (missing password for ex)
-			std::cout << msg.substr(5, 12) << std::endl;
-			if (msg.substr(5, 12) != "gigacoolchat") {
-				MessageHandler::numericReply(client.get_fd(), "464", "Wrong password");
-				_disconnect_client(client.get_fd());
-				return;
-			}
-			_skip_line(msg);
-		}
-		else {
-			MessageHandler::numericReply(client.get_fd(), "461", "Password required");
+void TcpListener::_registration(std::string msg, Client &client) {
+	if (msg.find("CAP") == 0) {
+		_skip_line(msg); }
+	if (msg.find("PASS") == 0)
+	{ // todo: dont forget errors here (missing password for ex)
+		std::cout << msg.substr(5, 12) << std::endl;
+		if (msg.substr(5, 12) != "gigacoolchat") {
+			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
 			_disconnect_client(client.get_fd());
 			return;
 		}
-		if (msg.find("NICK") == 0){
-				if (!client.set_nickname(msg, this->_clients, *this))
-					_handle_error("other nickname error");
-			_skip_line(msg);
-		}
-		if (msg.find("USER") == 0) {
-			if (!client.set_userdata(msg, *this))
-				_handle_error("other username error");
-			_skip_line(msg);
-		}
-		client.get_infos();
+		_skip_line(msg);
+	}
+	else {
+		MessageHandler::numericReply(client.get_fd(), "461", " :Password required");
+		_disconnect_client(client.get_fd());
+		return;
+	}
+	if (msg.find("NICK") == 0){
+		if (!client.set_nickname(msg, this->_clients, *this))
+			_handle_error("other nickname error");
+		_skip_line(msg);
+	}
+	if (msg.find("USER") == 0) {
+		if (!client.set_userdata(msg, *this))
+			_handle_error("other username error");
+		_skip_line(msg);
+	}
+	client.get_infos();
 
-		MessageHandler::numericReply(client.get_fd(), "001", client.get_nick() + " :Welcome to the IRC Network, " + client.get_nick() + "!" + client.get_username() + "@" + client.get_hostname());
-		MessageHandler::numericReply(client.get_fd(), "002", client.get_nick() + " :Your host is localhost, running version DEV");
-		MessageHandler::numericReply(client.get_fd(), "003", client.get_nick() + " :This server was created <datetime>");
-		MessageHandler::numericReply(client.get_fd(), "004", client.get_nick() + " <servername> <version> <available user modes> <available channel modes> [<channel modes with a parameter>]");
+	client.set_registered();
+}
 
-		client.set_registered();
+void TcpListener::_connection(Client &client) {
+
+	std::string nick = client.get_nick();
+	std::string username = client.get_username();
+	std::string msg = RPL_WELCOME(user_id(nick, username), nick) +
+			RPL_YOURHOST(nick) +
+			RPL_CREATED("TODAY") +
+			RPL_MYINFO() +
+			RPL_MOTDSTART(nick) +
+			RPL_MOTD(nick, "- WELCOME !!!!") +
+			RPL_MOTD(nick, "-  O") +
+			RPL_MOTD(nick, "-  |") +
+			RPL_MOTD(nick, "- / \\") +
+			RPL_MOTD(nick, "-  |") +
+			RPL_MOTD(nick, "- / \\") +
+			RPL_ENDOFMOTD(nick);
+	MessageHandler::HandleMessage(client.get_fd(), msg);
+
+	client.set_connected();
+
+}
+
+void TcpListener::_process_msg(const std::string& msg, Client	&client)
+{
+	if (!client.is_connected()) // CONNECTION PROCEDURE
+	{
+		if (!client.is_registered()) {
+			_registration(msg, client);
+
+			if (client.is_registered())
+				_connection(client);
+		}
 	}
 	else // all commands after registration
 	{
 		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
-			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + "You may not reregister");
+			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
 		}
 		if (msg.find("PING") == 0) {
-			MessageHandler::HandleMessage(client.get_fd(), "PONG " + client.get_hostname());
+			MessageHandler::HandleMessage(client.get_fd(), ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
 		}
 	}
 }
