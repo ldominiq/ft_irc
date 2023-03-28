@@ -95,109 +95,98 @@ void TcpListener::_disconnect_client(int client_fd) {
 	_nfds--;
 }
 
-void TcpListener::_WaitForConnection(int listening_fd) {
-    struct sockaddr_in  client_addr;
-    socklen_t           client_addr_size;
-    int                 client_fd = -1;
+int TcpListener::_handle_new_connection(int listening_fd) {
 
+	struct sockaddr_in  client_addr;
+	socklen_t           client_addr_size;
+	int                 client_fd = -1;
+
+	client_addr_size = sizeof(client_addr);
+
+	print_debug("Listening socket is readable");
+
+	client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
+	if (client_fd < 0) {
+		perror("Error on client connecting.");
+		return -1;
+	}
+
+	// Add the new incoming connection to the pollfd structure
+	std::string hostname(inet_ntoa(client_addr.sin_addr));
+	std::cout << "Accepted new connection from: " << hostname << " on socket: " << client_fd << std::endl;
+	_fds[_nfds].fd = client_fd;
+	_fds[_nfds].events = POLLIN;
+	_fds[_nfds].revents = 0;
+	_nfds++;
+
+	this->_clients.push_back(new Client(client_fd, hostname));
+	return 0;
+}
+
+int TcpListener::_handle_message(int i) {
+
+	char    buffer[BUF_SIZE];
+	ssize_t bytes_received;
+
+	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
+
+	memset(buffer, 0, BUF_SIZE);
+
+	//Wait for client to send data
+	bytes_received = recv(_fds[i].fd, buffer, BUF_SIZE, 0);
+
+	if (bytes_received == -1) {
+		std::cout << "Connection issue" << std::endl;
+		return -1;
+	}
+
+	// Check to see if the connection has been closed by the client
+	if (bytes_received == 0) {
+		_disconnect_client(_fds[i].fd);
+		return -1;
+	}
+	std::cout << bytes_received << " bytes received." << std::endl;
+	std::cout << "Message received: " << std::endl
+			  << buffer << std::endl;
+	_process_msg(buffer, get_client(_fds[i].fd));
+
+	return 0;
+}
+
+void TcpListener::_WaitForConnection(int listening_fd) {
     bool    end_server = false;
     _nfds = 1;
-    char    buffer[BUF_SIZE];
-    ssize_t bytes_received;
 
-    client_addr_size = sizeof(client_addr);
+    // Initialize the pollfd structure
+    memset(_fds, 0, sizeof(*_fds));
 
-    /*************************************************************/
-    /* Initialize the pollfd structure                           */
-    /*************************************************************/
-    memset(_fds, 0 , sizeof(*_fds));
-
-    /*************************************************************/
-    /* Set up the initial listening socket                        */
-    /*************************************************************/
+    // Set up the initial listening socket
     _fds[0].fd = listening_fd;
     _fds[0].events = POLLIN;
 
-    /*************************************************************/
     /* Loop waiting for incoming connects or for incoming data   */
     /* on any of the connected sockets.                          */
-    /*************************************************************/
     do {
 		print_debug("Waiting on poll()...");
         if (poll(_fds, _nfds, -1) < 0)
             _handle_error("poll() failed");
 
-        /***********************************************************/
-        /* One or more descriptors are readable.  Need to          */
-        /* determine which ones they are.                          */
-        /***********************************************************/
+        // One or more descriptors are readable. New connection or new message
         for (int i = 0; i < _nfds; i++) {
-            /*********************************************************/
-            /* Loop through to find the descriptors that returned    */
-            /* POLLIN and determine whether it's the listening       */
-            /* or the active connection.                             */
-            /*********************************************************/
             if (_fds[i].revents == 0)
                 continue;
 
-			/*********************************************************/
-			/* listening socket, therefore there is a new connection */
-			/*********************************************************/
-            if (_fds[i].fd == listening_fd) {
-                print_debug("Listening socket is readable");
-
-                client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
-                if (client_fd < 0) {
-                    perror("Error on client connecting.");
-                    break;
-                }
-
-                /*****************************************************/
-                /* Add the new incoming connection to the            */
-                /* pollfd structure                                  */
-                /*****************************************************/
-				std::string hostname(inet_ntoa(client_addr.sin_addr));
-                std::cout << "Accepted new connection from: " << hostname << " on socket: " << client_fd << std::endl;
-                _fds[_nfds].fd = client_fd;
-                _fds[_nfds].events = POLLIN;
-                _fds[_nfds].revents = 0;
-                _nfds++;
-
-                this->_clients.push_back(new Client(client_fd, hostname));
-            }
-
-            /*********************************************************/
-            /* This is not the listening socket, therefore an        */
-            /* existing connection must be readable                  */
-            /*********************************************************/
-            else {
-                std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
-
-                memset(buffer, 0, BUF_SIZE);
-
-                //Wait for client to send data
-                bytes_received = recv(_fds[i].fd, buffer, BUF_SIZE, 0);
-
-                if (bytes_received == -1) {
-                    std::cout << "Connection issue" << std::endl;
-                    break;
-                }
-
-                /*****************************************************/
-                /* Check to see if the connection has been           */
-                /* closed by the client                              */
-                /*****************************************************/
-                if (bytes_received == 0) {
-                    _disconnect_client(_fds[i].fd);
-                    break;
-                }
-                std::cout << bytes_received << " bytes received." << std::endl;
-                std::cout << "Message received: " << std::endl
-				<< buffer << std::endl;
-				_process_msg(buffer, get_client(_fds[i].fd));
-            } /* End of existing connection is readable             */
-        } /* End of loop through pollable descriptors              */
-    } while (!end_server); /* End of serving running.    */
+			// listening socket, therefore there is a new connection
+			if (_fds[i].fd == listening_fd) {
+				if (_handle_new_connection(listening_fd) == -1)
+					break;
+			}
+			else {
+                if (_handle_message(i) == -1)
+					break;
+			}
+        }
+    } while (!end_server);
 
     for (int i = 0; i < _nfds; i++) {
         if (_fds[i].fd >= 0)
