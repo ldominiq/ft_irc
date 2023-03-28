@@ -18,6 +18,7 @@
 #include "Client.hpp"
 #include "Modifier.hpp"
 #include "Numeric_replies.hpp"
+#include "CommandHandler.hpp"
 
 #define BUF_SIZE 1024
 

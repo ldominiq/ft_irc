@@ -262,12 +262,20 @@ void TcpListener::_process_msg(const std::string& msg, Client	&client)
 	}
 	else // all commands after registration
 	{
-		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
-			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
-		}
-		if (msg.find("PING") == 0) {
-			MessageHandler::HandleMessage(client.get_fd(), ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
-		}
+//		std::map<std::string, CommandHandler>::iterator iter = commandMap.find(msg);
+//		if (iter == commandMap.end()){
+//			// not found
+//			return;
+//		}
+//
+//		CommandHandler handler = iter->second;
+//		handler(client, 0, msg);
+//		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
+//			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
+//		}
+//		if (msg.find("PING") == 0) {
+//			MessageHandler::HandleMessage(client.get_fd(), ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
+//		}
 	}
 }
 

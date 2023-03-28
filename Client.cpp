@@ -3,10 +3,6 @@
 //
 
 #include "Client.hpp"
-#include <utility>
-#include <iostream>
-#include <sstream>
-#include "MessageHandler.hpp"
 
 Client::Client(int fd, std::string hostname) : _registered(false), _connected(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
 {}
