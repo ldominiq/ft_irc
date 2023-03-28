@@ -7,14 +7,12 @@
 
 #include "TcpListener.hpp"
 #include "Client.hpp"
+//#include "MessageHandler.hpp"
 
 class Client;
 
 typedef void(*CommandHandler)(Client &, int, const std::string);
 std::map<std::string, CommandHandler> commandMap;
-
-
-
 
 void handleJoin(Client &client, int argc, const std::string argv) { /* ... */ }
 void handleNick(Client &client, int argc, const std::string argv) { /* ... */ }

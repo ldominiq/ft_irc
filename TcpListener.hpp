@@ -22,7 +22,8 @@
 
 #define BUF_SIZE 1024
 
-class MessageHandler;
+//class MessageHandler;
+class Client;
 
 class TcpListener {
 public:
