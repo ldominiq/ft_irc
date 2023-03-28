@@ -8,7 +8,7 @@
 #include <sstream>
 #include "MessageHandler.hpp"
 
-Client::Client(int fd, std::string hostname) : _registered(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
+Client::Client(int fd, std::string hostname) : _registered(false), _connected(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
 {}
 
 Client::~Client()
@@ -16,7 +16,7 @@ Client::~Client()
 
 bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients, TcpListener &SERV) {
     if (nick.length() <= 5) {
-        MessageHandler::numericReply(_clientFd, "431", "No nickname given");
+        MessageHandler::numericReply(_clientFd, "431", ":No nickname given");
         return false;
     }
 
@@ -31,7 +31,7 @@ bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients,
 	std::cout << "trimmed nick: " << trimmed_nick << std::endl;
     if (!is_valid_nick(trimmed_nick)) {
         std::cout << "Not a valid nickname" << std::endl;
-        MessageHandler::numericReply(_clientFd, "432", trimmed_nick + " Erroneous nickname");
+        MessageHandler::numericReply(_clientFd, "432", trimmed_nick + " :Erroneous nickname");
         return false;
     }
 
@@ -40,9 +40,9 @@ bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients,
         return true;
     } else {
         if (_registered) {
-            MessageHandler::numericReply(_clientFd, "433", _username + " " + trimmed_nick + " Nickname is already in use");
+            MessageHandler::numericReply(_clientFd, "433", _username + " " + trimmed_nick + " :Nickname is already in use");
         } else {
-            MessageHandler::numericReply(_clientFd, "433", trimmed_nick + " " + trimmed_nick + " Nickname is already in use");
+            MessageHandler::numericReply(_clientFd, "433", trimmed_nick + " " + trimmed_nick + " :Nickname is already in use");
         }
         return false;
     }
@@ -50,6 +50,10 @@ bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients,
 
 void Client::set_registered() {
 	this->_registered = true;
+}
+
+void Client::set_connected() {
+	this->_connected = true;
 }
 
 static bool is_valid_username(std::string u) {
@@ -99,5 +103,6 @@ void Client::get_infos() {
 	std::cout << "nick: " << this->get_nick() << std::endl;
 	std::cout << "user: " << this->get_username() << std::endl;
 	std::cout << "hostname" << this->get_hostname() << std::endl;
-	std::cout << "status: " << this->get_status() << std::endl;
+	std::cout << "registered: " << this->is_registered() << std::endl;
+	std::cout << "connected: " << this->is_connected() << std::endl;
 }

@@ -20,8 +20,10 @@ public:
 	bool		set_nickname(const std::string &nick, std::list<Client *>     &_clients, TcpListener	&SERV);
 	bool		set_userdata(const std::string &userdata, TcpListener	&SERV);
 	void		set_registered();
+	void		set_connected();
 	int			get_fd() const { return _clientFd;};
-	bool		get_status() const { return _registered;};
+	bool		is_registered() const { return _registered;};
+	bool		is_connected() const { return _connected;};
 	std::string	get_nick() { return _nickname.empty() ? "" : _nickname; }
 	std::string	get_username() { return _username.empty() ? "" : _username; }
 	std::string get_hostname() { return _hostname.empty() ? "" : _hostname; }
@@ -29,6 +31,7 @@ public:
 private:
 	Client();
 	bool 								_registered;
+	bool								_connected;
     int                                 _clientFd;
     std::string                         _nickname;
     std::string                         _username;
