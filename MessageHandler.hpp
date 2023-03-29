@@ -5,8 +5,8 @@
 #ifndef MESSAGEHANDLER_HPP
 #define MESSAGEHANDLER_HPP
 
-#include "TcpListener.hpp"
 #include <iostream>
+#include "TcpListener.hpp"
 
 class MessageHandler {
 public:

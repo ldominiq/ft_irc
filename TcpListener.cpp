@@ -1,12 +1,18 @@
 //
 // Created by Lucas on 22-Feb-23.
 //
-
 #include "TcpListener.hpp"
-#include "utils.hpp"
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
-: _ipAddress(ipAddress), _port(port) {}
+: _ipAddress(ipAddress), _port(port) {
+	_commands[0] = "NICK";
+	_commands[1] = "USER";
+	_commands[2] = "JOIN";
+	_commands[3] = "PART";
+	_commands[4] = "PRIVMSG";
+	_commands[5] = "PING";
+	_commands[6] = "EXIT";
+}
 
 TcpListener::~TcpListener() {}
 
@@ -257,13 +263,41 @@ void TcpListener::_process_msg(const std::string& msg, Client	&client)
 		_connection(client);
 	else // all commands after registration
 	{
-		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
-			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
+		//todo:
+		//parse msg
+		std::istringstream iss(msg);
+		std::string cmd;
+		iss >> cmd;
+		// parse params
+		std::vector<std::string> params;
+		for (std::string param; iss >> param;)
+			params.push_back(param);
+		// print out params content to check
+		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it)
+			std::cout << *it << std::endl;
+
+		//call command
+		if (cmd == "PING") { // todo: move it in PRIVMSG scope
+			MessageHandler::HandleMessage(client.get_fd(),
+										  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
 		}
-		if (msg.find("PING") == 0) {
-			MessageHandler::HandleMessage(client.get_fd(), ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
+		if (cmd == "NICK") {
+			if (!client.set_nickname(msg, this->_clients, *this))
+				_handle_error("other nickname error");
+		}
+		if (cmd == "JOIN") {
+			_handle_join(client, params);
+		}
+		if (cmd == "PRIVMSG") {
+			_handle_privmsg(client, params);
 		}
 	}
+//
+//		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
+//			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
+//		}
+//		if (msg.find("PING") == 0) {
+//		}
 }
 
 void TcpListener::_handle_error(const char *msg) {
@@ -299,4 +333,32 @@ Client& TcpListener::get_client(int client_fd) {
     }
 
     throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
+}
+
+void TcpListener::_handle_join(Client &client, std::vector<std::string> &params)
+{
+	if (params.empty())
+		MessageHandler::numericReply(client.get_fd(), "461", "JOIN :Not enough parameters");
+	else if (params.size() > 1)
+		MessageHandler::numericReply(client.get_fd(), "461", "JOIN :Too many parameters");
+	else
+	{
+		if (params[0][0] != '&')
+			MessageHandler::numericReply(client.get_fd(), "403", params[0] + " :No such channel");
+		else
+		{ // handle multi-channels or not? If yes, how? This version doesn't handle it
+			//					if (client.get_channel() != NULL)
+			//						client.get_channel()->remove_client(client.get_fd());
+			//					client.set_channel(this->_channels[params[0]]);
+			//					client.get_channel()->add_client(client.get_fd());
+			MessageHandler::HandleMessage(client.get_fd(), ":" + client.get_nick() + "!" + client.get_username() + "@" +
+										  client.get_hostname() + " JOIN " + params[0]);
+			// todo: verify that this copilot generated message makes any sense
+		}
+	}
+}
+
+void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &vector1)
+{
+
 }

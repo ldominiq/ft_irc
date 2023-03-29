@@ -5,7 +5,6 @@
 #ifndef FT_IRC_UTILS_HPP
 #define FT_IRC_UTILS_HPP
 
-#include "TcpListener.hpp"
 #include <string>
 
 void	_skip_line(std::string &msg);

@@ -8,7 +8,12 @@
 #include <string>
 #include <list>
 #include <map>
+#include <utility>
+#include <iostream>
+#include <sstream>
+
 #include "Channel.hpp"
+#include "TcpListener.hpp"
 
 class TcpListener;
 
@@ -29,7 +34,7 @@ public:
 	std::string get_hostname() { return _hostname.empty() ? "" : _hostname; }
 	void		get_infos();
 private:
-	Client();
+	Client() {};
 	bool 								_registered;
 	bool								_connected;
     int                                 _clientFd;
