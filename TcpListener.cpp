@@ -282,10 +282,6 @@ void TcpListener::_process_msg(const std::string& msg, Client	&client)
 			std::cout << *it << std::endl;
 
 		//call command
-		if (cmd == "PING") { // todo: move it in PRIVMSG scope
-			MessageHandler::HandleMessage(client.get_fd(),
-										  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
-		}
 		if (cmd == "NICK") {
 			if (!client.set_nickname(msg, this->_clients, *this))
 				_handle_error("other nickname error");
@@ -318,6 +314,17 @@ bool TcpListener::_nickname_available(std::string &nick)
 			return (false);
 	}
 	return (true);
+}
+
+bool TcpListener::_channel_available(std::string &chan_name)
+{
+	std::list<Channel *>::iterator it;
+
+	for (it = this->_channels.begin(); it != this->_channels.end(); it++){
+		if (!chan_name.empty() && chan_name == ((*it))->get_name())
+			return (false);
+	}
+	return false;
 }
 
 void TcpListener::delete_client(int client_fd) {
@@ -363,7 +370,17 @@ void TcpListener::_handle_join(Client &client, std::vector<std::string> &params)
 	}
 }
 
-void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &vector1)
+void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &params)
 {
-
+	if (_nickname_available(params[0])) { // MESSAGE TO USER
+	}
+	else if (is_channel(params[1])) { // MESSAGE TO CHANNEL
+	}
+	else {
+		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");
+	}
+//	if (cmd == "PING") { // todo: move it in PRIVMSG scope
+//		MessageHandler::HandleMessage(client.get_fd(),
+//									  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
+//	}
 }

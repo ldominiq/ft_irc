@@ -14,6 +14,7 @@ public:
     Channel(std::string name);
     ~Channel();
 
+	std::string get_name() const { return _name; };
 private:
     std::string _name;
     std::string _topic;
