@@ -198,7 +198,7 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	if (msg.find("CAP") == 0) {
 		_skip_line(msg); }
 	if (msg.find("PASS") == 0)
-	{ // todo: dont forget errors here (missing password for ex)
+	{
 		std::cout << msg.substr(5, 12) << std::endl;
 		if (msg.substr(5, 12) != "gigacoolchat") {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
@@ -251,15 +251,10 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_process_msg(const std::string& msg, Client	&client)
 {
-	if (!client.is_connected()) // CONNECTION PROCEDURE
-	{
-		if (!client.is_registered()) {
-			_registration(msg, client);
-
-			if (client.is_registered())
-				_connection(client);
-		}
-	}
+	if (!client.is_registered())
+		_registration(msg, client);
+	if (!client.is_connected())
+		_connection(client);
 	else // all commands after registration
 	{
 		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
