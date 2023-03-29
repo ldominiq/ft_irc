@@ -258,8 +258,8 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params) {
 	std::string valid_commands[4] = {
-		"PING",
 		"JOIN",
+		"PING",
 		"NICK",
 		"PRIVMSG"
 	};
@@ -272,9 +272,9 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, const st
 		idx++;
 	}
 	switch (idx + 1) {
-//		case 1: join(client.get_fd(), params); break;
+		case 1: join(*this, client, params); break;
 //		case 2: nick(client.get_fd(), params); break;
-		case 1: ping(client.get_fd(), params); break;
+		case 2: ping(client, params); break;
 //		case 4: privmsg(client.get_fd(), params); break;
 	}
 }

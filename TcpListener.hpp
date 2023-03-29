@@ -41,6 +41,7 @@ public:
 	void			delete_client(int	client_fd);
 	Client&			get_client(int client_fd);
 	bool 			_nickname_available(std::string &nick);
+	std::map<std::string, Channel *>& get_channels() { return _channels; }
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
@@ -51,7 +52,7 @@ private:
 	static void		_connection(Client &client);
 	int 			_handle_new_connection(int listening_fd);
 	int 			_handle_message(int i);
-	static void		_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params);
+	void			_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params);
 
     std::string                 _ipAddress;
     int                         _port;
@@ -59,6 +60,7 @@ private:
 	int     					_nfds;
 	struct pollfd       		_fds[10];
 	std::string 				_commands[20];
+	std::map<std::string, Channel *>    _channels;
 
 	void _handle_join(Client &client, std::vector<std::string> &params);
 

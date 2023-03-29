@@ -33,6 +33,7 @@ public:
 	std::string	get_username() { return _username.empty() ? "" : _username; }
 	std::string get_hostname() { return _hostname.empty() ? "" : _hostname; }
 	void		get_infos();
+	std::map<std::string, Channel *>& get_channels() { return _channels; }
 private:
 	Client() {};
 	bool 								_registered;
