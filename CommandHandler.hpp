@@ -5,26 +5,11 @@
 #ifndef COMMAND_HANDLER_HPP
 #define COMMAND_HANDLER_HPP
 
-#include "TcpListener.hpp"
-#include "Client.hpp"
+#include <vector>
 
-class Client;
-
-typedef void(*CommandHandler)(Client &, int, const std::string);
-std::map<std::string, CommandHandler> commandMap;
-
-void handleJoin(Client &client, int argc, const std::string argv) { /* ... */ }
-void handleNick(Client &client, int argc, const std::string argv) { /* ... */ }
-void handleQuit(Client &client, int argc, const std::string argv) { /* ... */ }
-void handlePing(Client &client, int argc, const std::string argv) {
-	//MessageHandler::HandleMessage(client.get_fd(), ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
-}
-
-void populateCommands() {
-	commandMap["JOIN"] = &handleJoin;
-	commandMap["NICK"] = &handleNick;
-	commandMap["QUIT"] = &handleQuit;
-	commandMap["PING"] = &handlePing;
-};
+//void join(int client_fd, std::vector<std::string> params);
+//void nick(int client_fd, std::vector<std::string> params);
+void ping(int client_fd, std::vector<std::string> params);
+//void privmsg(int client_fd, std::vector<std::string> params);
 
 #endif

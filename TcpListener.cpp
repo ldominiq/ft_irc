@@ -2,6 +2,7 @@
 // Created by Lucas on 22-Feb-23.
 //
 #include "TcpListener.hpp"
+#include "CommandHandler.hpp"
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
 : _ipAddress(ipAddress), _port(port) {
@@ -255,6 +256,29 @@ void TcpListener::_connection(Client &client) {
 
 }
 
+void TcpListener::_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params) {
+	std::string valid_commands[4] = {
+		"PING",
+		"JOIN",
+		"NICK",
+		"PRIVMSG"
+	};
+
+	int idx = 0;
+
+	while (idx < 4) {
+		if (cmd == valid_commands[idx])
+			break;
+		idx++;
+	}
+	switch (idx + 1) {
+//		case 1: join(client.get_fd(), params); break;
+//		case 2: nick(client.get_fd(), params); break;
+		case 1: ping(client.get_fd(), params); break;
+//		case 4: privmsg(client.get_fd(), params); break;
+	}
+}
+
 void TcpListener::_process_msg(const std::string& msg, Client	&client)
 {
 	if (!client.is_registered())
@@ -272,25 +296,23 @@ void TcpListener::_process_msg(const std::string& msg, Client	&client)
 		std::vector<std::string> params;
 		for (std::string param; iss >> param;)
 			params.push_back(param);
-		// print out params content to check
-		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it)
-			std::cout << *it << std::endl;
 
+		_exec_command(client, cmd, params);
 		//call command
-		if (cmd == "PING") { // todo: move it in PRIVMSG scope
-			MessageHandler::HandleMessage(client.get_fd(),
-										  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
-		}
-		if (cmd == "NICK") {
-			if (!client.set_nickname(msg, this->_clients, *this))
-				_handle_error("other nickname error");
-		}
-		if (cmd == "JOIN") {
-			_handle_join(client, params);
-		}
-		if (cmd == "PRIVMSG") {
-			_handle_privmsg(client, params);
-		}
+//		if (cmd == "PING") { // todo: move it in PRIVMSG scope
+//			MessageHandler::HandleMessage(client.get_fd(),
+//										  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
+//		}
+//		if (cmd == "NICK") {
+//			if (!client.set_nickname(msg, this->_clients, *this))
+//				_handle_error("other nickname error");
+//		}
+//		if (cmd == "JOIN") {
+//			_handle_join(client, params);
+//		}
+//		if (cmd == "PRIVMSG") {
+//			_handle_privmsg(client, params);
+//		}
 	}
 //
 //		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
