@@ -316,15 +316,17 @@ bool TcpListener::_nickname_available(std::string &nick)
 	return (true);
 }
 
-bool TcpListener::_channel_available(std::string &chan_name)
+Channel * TcpListener::_is_channel(std::string &chan_name)
 {
 	std::list<Channel *>::iterator it;
 
+	if (chan_name[0] != '&')
+		return nullptr;
 	for (it = this->_channels.begin(); it != this->_channels.end(); it++){
 		if (!chan_name.empty() && chan_name == ((*it))->get_name())
-			return (false);
+			return (*it);
 	}
-	return false;
+	return nullptr;
 }
 
 void TcpListener::delete_client(int client_fd) {
@@ -345,6 +347,17 @@ Client& TcpListener::get_client(int client_fd) {
     }
 
     throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
+}
+
+Client &TcpListener::get_client(std::string &nick)
+{
+	std::list<Client *>::iterator it;
+
+	for (it = this->_clients.begin(); it != this->_clients.end(); it++){
+		if (!nick.empty() && nick == ((*it))->get_nick())
+			return **it;
+	}
+	throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }
 
 void TcpListener::_handle_join(Client &client, std::vector<std::string> &params)
@@ -371,16 +384,22 @@ void TcpListener::_handle_join(Client &client, std::vector<std::string> &params)
 }
 
 void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &params)
-{
-	if (_nickname_available(params[0])) { // MESSAGE TO USER
+{ // todo: alll error messages are copilot generated, check if they are correct or behavior must be different
+	if (params.size() < 1) {
+		MessageHandler::numericReply(client.get_fd(), "411", ":No recipient given (PRIVMSG)");
+		return; }
+	else if (params.size() < 2) {
+		MessageHandler::numericReply(client.get_fd(), "412", ":No text to send");
+		return; }
+
+	Channel *chan = _is_channel(params[0]);
+	if (chan){
+		chan->send_message(client.get_nick(), params[1]);
 	}
-	else if (is_channel(params[1])) { // MESSAGE TO CHANNEL
-	}
+	else if (_nickname_available(params[0]))
+		MessageHandler::send_to_client(params[0], params[1]);
 	else {
-		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");
-	}
-//	if (cmd == "PING") { // todo: move it in PRIVMSG scope
-//		MessageHandler::HandleMessage(client.get_fd(),
-//									  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
-//	}
+		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
 }
+
+

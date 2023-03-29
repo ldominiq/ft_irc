@@ -40,6 +40,7 @@ public:
 	}
 	void			delete_client(int	client_fd);
 	Client&			get_client(int client_fd);
+	Client&			get_client(std::string	&nick);
 	bool 			_nickname_available(std::string &nick);
 	Channel*		_is_channel(std::string &chan_name);
 private:
