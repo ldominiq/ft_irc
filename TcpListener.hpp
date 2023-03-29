@@ -13,16 +13,14 @@
 #include <sys/poll.h>
 #include <list>
 
+#include "Modifier.hpp"
+#include "Numeric_replies.hpp"
 #include "utils.hpp"
 #include "MessageHandler.hpp"
 #include "Client.hpp"
-#include "Modifier.hpp"
-#include "Numeric_replies.hpp"
-#include "CommandHandler.hpp"
 
 #define BUF_SIZE 1024
 
-//class MessageHandler;
 class Client;
 
 class TcpListener {
@@ -59,6 +57,11 @@ private:
     std::list<Client *>     	_clients;
 	int     					_nfds;
 	struct pollfd       		_fds[10];
+	std::string 				_commands[20];
+
+	void _handle_join(Client &client, std::vector<std::string> &params);
+
+	void _handle_privmsg(Client &client, std::vector<std::string> &vector1);
 };
 
 #endif

@@ -1,8 +1,9 @@
 //
 // Created by Lucas on 24-Feb-23.
 //
-
 #include "Client.hpp"
+#include "MessageHandler.hpp"
+#include "utils.hpp"
 
 Client::Client(int fd, std::string hostname) : _registered(false), _connected(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
 {}
