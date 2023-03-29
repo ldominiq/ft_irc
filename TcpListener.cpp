@@ -2,6 +2,7 @@
 // Created by Lucas on 22-Feb-23.
 //
 #include "TcpListener.hpp"
+#include "CommandHandler.hpp"
 
 TcpListener::TcpListener(const std::string& ipAddress, int port)
 : _ipAddress(ipAddress), _port(port) {
@@ -204,7 +205,7 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	if (msg.find("CAP") == 0) {
 		_skip_line(msg); }
 	if (msg.find("PASS") == 0)
-	{ // todo: dont forget errors here (missing password for ex)
+	{
 		std::cout << msg.substr(5, 12) << std::endl;
 		if (msg.substr(5, 12) != "gigacoolchat") {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
@@ -255,17 +256,35 @@ void TcpListener::_connection(Client &client) {
 
 }
 
+void TcpListener::_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params) {
+	std::string valid_commands[4] = {
+		"PING",
+		"PRIVMSG",
+		"JOIN",
+		"NICK",
+	};
+
+	int idx = 0;
+
+	while (idx < 4) {
+		if (cmd == valid_commands[idx])
+			break;
+		idx++;
+	}
+	switch (idx + 1) {
+		case 1: ping(client.get_fd(), params); break;
+		case 2: _handle_privmsg(client, params); break;
+//		case 1: join(client.get_fd(), params); break;
+//		case 2: nick(client.get_fd(), params); break;
+	}
+}
+
 void TcpListener::_process_msg(const std::string& msg, Client	&client)
 {
-	if (!client.is_connected()) // CONNECTION PROCEDURE
-	{
-		if (!client.is_registered()) {
-			_registration(msg, client);
-
-			if (client.is_registered())
-				_connection(client);
-		}
-	}
+	if (!client.is_registered())
+		_registration(msg, client);
+	if (!client.is_connected())
+		_connection(client);
 	else // all commands after registration
 	{
 		//todo:
@@ -277,28 +296,9 @@ void TcpListener::_process_msg(const std::string& msg, Client	&client)
 		std::vector<std::string> params;
 		for (std::string param; iss >> param;)
 			params.push_back(param);
-		// print out params content to check
-		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); ++it)
-			std::cout << *it << std::endl;
 
-		//call command
-		if (cmd == "NICK") {
-			if (!client.set_nickname(msg, this->_clients, *this))
-				_handle_error("other nickname error");
-		}
-		if (cmd == "JOIN") {
-			_handle_join(client, params);
-		}
-		if (cmd == "PRIVMSG") {
-			_handle_privmsg(client, params);
-		}
+		_exec_command(client, cmd, params);
 	}
-//
-//		if (msg.find("USER") == 0) { // todo: maybe use realname (write a getter), instead of nickname in this error message
-//			MessageHandler::numericReply(client.get_fd(), "462", client.get_nick() + ":You may not reregister");
-//		}
-//		if (msg.find("PING") == 0) {
-//		}
 }
 
 void TcpListener::_handle_error(const char *msg) {
@@ -401,5 +401,3 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 	else {
 		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
 }
-
-
