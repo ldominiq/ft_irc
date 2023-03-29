@@ -256,7 +256,7 @@ void TcpListener::_connection(Client &client) {
 
 }
 
-void TcpListener::_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params) {
+void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params) {
 	std::string valid_commands[4] = {
 		"PING",
 		"PRIVMSG",
