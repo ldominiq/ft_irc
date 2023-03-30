@@ -11,7 +11,7 @@
 class MessageHandler {
 public:
     static void HandleMessage(int socketId, const std::string &msg);
-	static void	numericReply(int client_fd, std::string numeric, std::string message);
+	static void	numericReply(int client_fd, const std::string& numeric, const std::string& message);
 };
 
 
