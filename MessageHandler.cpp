@@ -16,20 +16,15 @@ void MessageHandler::numericReply(int client_fd, std::string numeric, std::strin
 void MessageHandler::send_to_client(std::string sender, std::vector<std::string> &params, TcpListener *SERV)
 {
 	std::string message = params[1];
-	// concatenate params 1 to n into string message
+	// concatenate params 1 to n into string msg if it's fragmented
 	if (params.size() > 2) {
 		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++)
 			message += *it;
 	}
-
-	std::string trimmed = message.substr(1); // REMOVE the ":" prefix
 	// FIND CLIENT USING NICKNAME
 	Client&	client = SERV->get_client(params[0]);
 	std::cout << client.get_fd() << std::endl;
 	// SEND REFORMATED MESSAGE TO CLIENT
-	std::cout << "message " + message + "$" << std::endl;
 	std::string reform = ":" + sender + " PRIVMSG " + client.get_nick() + " " + message + "\r\n";
-
-	std::cout << reform << std::endl;
 	MessageHandler::HandleMessage(client.get_fd(), reform);
 }

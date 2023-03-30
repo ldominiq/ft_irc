@@ -18,7 +18,7 @@ TcpListener::TcpListener(const std::string& ipAddress, int port)
 TcpListener::~TcpListener() {}
 
 void TcpListener::Send(int clientSocket, const std::string& msg) {
-    send(clientSocket, msg.c_str(), msg.size() + 1, 0);
+    send(clientSocket, msg.c_str(), msg.size(), 0);
 }
 
 void TcpListener::Run() {
