@@ -105,6 +105,7 @@ void Client::get_infos() {
 }
 
 void Client::join_channel(Channel *channel) {
+	channel->add_user(this);
 	this->_channels.insert(std::pair<std::string, Channel *>(channel->get_name(), channel));
 }
 

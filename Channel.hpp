@@ -17,6 +17,7 @@ public:
     Channel(std::string name);
     ~Channel();
 	std::string get_name() {return _name;};
+	void add_user(Client *client);
 
 private:
     std::string _name;
