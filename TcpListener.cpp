@@ -384,3 +384,18 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &vect
 {
 
 }
+
+void TcpListener::add_channel(Channel *channel) {
+	this->_channels.insert(std::pair<std::string, Channel *>(channel->get_name(), channel));
+}
+
+void TcpListener::print_channels() {
+	std::map<std::string, Channel *> channels = this->get_channels();
+
+	std::map<std::string, Channel *>::iterator it = channels.begin();
+	std::cout << "CHANNELS LIST:" << std::endl;
+	while (it != channels.end()) {
+		std::cout << it->first << std::endl;
+		it++;
+	}
+}

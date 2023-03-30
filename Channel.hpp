@@ -8,16 +8,20 @@
 
 #include <string>
 #include <vector>
+#include "Client.hpp"
+
+class Client;
 
 class Channel {
 public:
     Channel(std::string name);
     ~Channel();
+	std::string get_name() {return _name;};
 
 private:
     std::string _name;
     std::string _topic;
-    std::vector<std::string> _users;
+    std::vector<Client *> _users;
 };
 
 

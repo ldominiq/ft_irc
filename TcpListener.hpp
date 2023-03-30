@@ -22,6 +22,7 @@
 #define BUF_SIZE 1024
 
 class Client;
+class Channel;
 
 class TcpListener {
 public:
@@ -42,6 +43,8 @@ public:
 	Client&			get_client(int client_fd);
 	bool 			_nickname_available(std::string &nick);
 	std::map<std::string, Channel *>& get_channels() { return _channels; }
+	void 			add_channel(Channel *channel);
+	void 			print_channels();
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
@@ -62,7 +65,7 @@ private:
 	std::string 				_commands[20];
 	std::map<std::string, Channel *>    _channels;
 
-	void _handle_join(Client &client, std::vector<std::string> &params);
+	static void _handle_join(Client &client, std::vector<std::string> &params);
 
 	void _handle_privmsg(Client &client, std::vector<std::string> &vector1);
 };
