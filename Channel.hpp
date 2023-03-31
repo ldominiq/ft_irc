@@ -16,10 +16,14 @@ class Client;
 class Channel {
 public:
     Channel(std::string name);
+	Channel(const Channel& other);
     ~Channel();
-	void		add_user(Client *client);
-	bool		send_message(std::string nick, std::string &msg);
-	std::string get_name() {return _name;};
+	Channel& operator=(const Channel& other);
+
+	std::string				get_name() {return _name;};
+	void					add_user(Client *client);
+	std::vector<Client *>	get_users() { return _users; };
+	bool					send_message(std::string nick, std::string &msg);
 private:
     std::string _name;
     std::string _topic;
