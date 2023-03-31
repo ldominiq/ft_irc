@@ -395,7 +395,12 @@ void TcpListener::print_channels() {
 	std::map<std::string, Channel *>::iterator it = channels.begin();
 	std::cout << "CHANNELS LIST:" << std::endl;
 	while (it != channels.end()) {
-		std::cout << it->first << std::endl;
+		std::vector<Client *> users = it->second->get_users();
+		std::cout << "USERS IN CHANNEL:" << it->first << std::endl;
+		for (Client* user : users) {
+			std::cout << user->get_nick() << " ";
+		}
+		std::cout << std::endl;
 		it++;
 	}
 }
