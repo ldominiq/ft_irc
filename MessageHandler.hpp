@@ -8,11 +8,13 @@
 #include <iostream>
 #include "TcpListener.hpp"
 
+class TcpListener;
+
 class MessageHandler {
 public:
     static void HandleMessage(int socketId, const std::string &msg);
 	static void	numericReply(int client_fd, std::string numeric, std::string message);
-	static void send_to_client(std::string &dest, std::string msg);
+	static void send_to_client(std::string sender, std::vector<std::string> &params, TcpListener *SERV);
 };
 
 

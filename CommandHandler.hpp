@@ -10,6 +10,7 @@
 //void join(int client_fd, std::vector<std::string> params);
 //void nick(int client_fd, std::vector<std::string> params);
 void ping(int client_fd, std::vector<std::string> params);
+void _mode(int fd, std::vector<std::string> params);
 //void privmsg(int client_fd, std::vector<std::string> params);
 
 #endif

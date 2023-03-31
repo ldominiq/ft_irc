@@ -18,7 +18,7 @@ TcpListener::TcpListener(const std::string& ipAddress, int port)
 TcpListener::~TcpListener() {}
 
 void TcpListener::Send(int clientSocket, const std::string& msg) {
-    send(clientSocket, msg.c_str(), msg.size() + 1, 0);
+    send(clientSocket, msg.c_str(), msg.size(), 0);
 }
 
 void TcpListener::Run() {
@@ -234,6 +234,9 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	client.set_registered();
 }
 
+
+#include <thread>
+#include <chrono>
 void TcpListener::_connection(Client &client) {
 
 	std::string nick = client.get_nick();
@@ -252,21 +255,25 @@ void TcpListener::_connection(Client &client) {
 			RPL_ENDOFMOTD(nick);
 	MessageHandler::HandleMessage(client.get_fd(), msg);
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+
 	client.set_connected();
 
 }
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params) {
-	std::string valid_commands[4] = {
+	std::string valid_commands[5] = {
 		"PING",
 		"PRIVMSG",
+		"MODE",
 		"JOIN",
-		"NICK",
+		"NICK"
 	};
 
 	int idx = 0;
 
-	while (idx < 4) {
+	while (idx < 5) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -274,25 +281,24 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	switch (idx + 1) {
 		case 1: ping(client.get_fd(), params); break;
 		case 2: _handle_privmsg(client, params); break;
-//		case 1: join(client.get_fd(), params); break;
-//		case 2: nick(client.get_fd(), params); break;
+		case 3: _mode(client.get_fd(), params); break;
+//		case 3: join(client.get_fd(), params); break;
+//		case 4: nick(client.get_fd(), params); break;
 	}
 }
 
 void TcpListener::_process_msg(const std::string& msg, Client	&client)
 {
-	if (!client.is_registered())
+	if (!client.is_registered()) // connection procedure
 		_registration(msg, client);
 	if (!client.is_connected())
 		_connection(client);
 	else // all commands after registration
 	{
-		//todo:
-		//parse msg
 		std::istringstream iss(msg);
 		std::string cmd;
 		iss >> cmd;
-		// parse params
+
 		std::vector<std::string> params;
 		for (std::string param; iss >> param;)
 			params.push_back(param);
@@ -396,8 +402,8 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 	if (chan){
 		chan->send_message(client.get_nick(), params[1]);
 	}
-	else if (_nickname_available(params[0]))
-		MessageHandler::send_to_client(params[0], params[1]);
+	else if (!_nickname_available(params[0]))
+		MessageHandler::send_to_client(client.get_nick(), params, this);
 	else {
 		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
 }
