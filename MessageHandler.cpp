@@ -16,10 +16,12 @@ void MessageHandler::numericReply(int client_fd, std::string numeric, std::strin
 void MessageHandler::send_to_client(std::string sender, std::vector<std::string> &params, TcpListener *SERV)
 {
 	std::string message = params[1];
-	// concatenate params 1 to n into string msg if it's fragmented
+	std::cout << "message: " << message << std::endl;
+	// concatenate params 2 (because is already in message) to n into string msg if it's fragmented
 	if (params.size() > 2) {
-		for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++)
-			message += *it;
+		std::vector<std::string>::iterator it = params.begin(); it += 2;
+		for (; it != params.end(); it++)
+			message += " " + *it;
 	}
 	// FIND CLIENT USING NICKNAME
 	Client&	client = SERV->get_client(params[0]);
