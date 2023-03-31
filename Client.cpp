@@ -77,7 +77,6 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
 
-	// HELLO THIS IS A TEST
 	std::istringstream splitout(userdata);
 	std::string u;
 
@@ -102,4 +101,18 @@ void Client::get_infos() {
 	std::cout << "hostname" << this->get_hostname() << std::endl;
 	std::cout << "registered: " << this->is_registered() << std::endl;
 	std::cout << "connected: " << this->is_connected() << std::endl;
+}
+
+void Client::join_channel(Channel *channel) {
+	channel->add_user(this);
+	this->_channels.insert(std::pair<std::string, Channel *>(channel->get_name(), channel));
+}
+
+bool Client::in_channel(const std::string& channel_name) {
+	std::map<std::string, Channel *> & channels = this->get_channels();
+
+	std::map<std::string, Channel *>::iterator it = channels.find(channel_name);
+	if (it == channels.end())
+		return false;
+	return true;
 }
