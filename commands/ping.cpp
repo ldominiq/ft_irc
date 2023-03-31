@@ -5,8 +5,16 @@
 #include "../CommandHandler.hpp"
 #include "../MessageHandler.hpp"
 
-void ping(Client &client, std::vector<std::string> params) {
-	MessageHandler::HandleMessage(client.get_fd(),
-								  ":127.0.0.1 PONG " + client.get_hostname() + " :" + client.get_nick());
+
+void ping(int client_fd, std::vector<std::string> params) {
+	MessageHandler::HandleMessage(client_fd,
+								  ":localhost PONG localhost :sbars\r\n");
 	std::cout << "PONG" << std::endl;
+}
+
+void _mode(int fd, std::vector<std::string> params)
+{
+	MessageHandler::HandleMessage(fd,
+								  ":sbars MODE sbars :+i\r\n");
+	std::cout << "mode" << std::endl;
 }

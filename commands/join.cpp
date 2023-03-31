@@ -28,7 +28,7 @@ void join(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 
 	// if channel exist, check if client already in channel
 	if (!client.in_channel(channel_name))
-		client.join_channel();
+		client.join_channel(SERV._is_channel(channel_name))	;
 
 	SERV.print_channels();
 }

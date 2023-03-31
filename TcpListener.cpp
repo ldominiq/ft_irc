@@ -256,7 +256,8 @@ void TcpListener::_connection(Client &client) {
 
 }
 
-void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params) {
+void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
+{
 	std::string valid_commands[5] = {
 			"JOIN",
 			"PING",
@@ -274,7 +275,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	}
 	switch (idx + 1) {
 		case 1: join(*this, client, params); break;
-		case 2: ping(client, params); break;
+		case 2: ping(client.get_fd(), params); break;
 		case 3: _handle_privmsg(client, params); break;
 		case 4: _mode(client.get_fd(), params); break;
 //		case 5: client.set_nickname(params[1]); break;
@@ -318,15 +319,14 @@ bool TcpListener::_nickname_available(std::string &nick)
 
 Channel * TcpListener::_is_channel(std::string &chan_name)
 {
-	std::list<Channel *>::iterator it;
-
 	if (chan_name[0] != '&')
 		return nullptr;
-	for (it = this->_channels.begin(); it != this->_channels.end(); it++){
-		if (!chan_name.empty() && chan_name == ((*it))->get_name())
-			return (*it);
-	}
-	return nullptr;
+
+	std::map<std::string, Channel *>::iterator it = this->_channels.find(chan_name);
+	if (it == this->_channels.end())
+		return nullptr;
+	else
+		return it->second;
 }
 
 void TcpListener::delete_client(int client_fd) {

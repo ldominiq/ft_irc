@@ -57,7 +57,7 @@ private:
 	static void		_connection(Client &client);
 	int 			_handle_new_connection(int listening_fd);
 	int 			_handle_message(int i);
-	void			_exec_command(Client &client, const std::string& cmd, const std::vector<std::string>& params);
+	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
 
     std::string                 _ipAddress;
     int                         _port;
