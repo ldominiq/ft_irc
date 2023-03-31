@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Client.hpp"
 
 class Client;
 
@@ -16,9 +17,9 @@ class Channel {
 public:
     Channel(std::string name);
     ~Channel();
-
-	std::string get_name() {return _name;};
+	void		add_user(Client *client);
 	bool		send_message(std::string nick, std::string &msg);
+	std::string get_name() {return _name;};
 private:
     std::string _name;
     std::string _topic;

@@ -23,3 +23,7 @@ bool Channel::send_message(std::string nick, std::string &msg)
 //	}
 	return false;
 }
+
+void Channel::add_user(Client *client) {
+	this->_users.push_back(client);
+}

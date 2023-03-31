@@ -234,9 +234,6 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	client.set_registered();
 }
 
-
-#include <thread>
-#include <chrono>
 void TcpListener::_connection(Client &client) {
 
 	std::string nick = client.get_nick();
@@ -255,20 +252,17 @@ void TcpListener::_connection(Client &client) {
 			RPL_ENDOFMOTD(nick);
 	MessageHandler::HandleMessage(client.get_fd(), msg);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-
 	client.set_connected();
 
 }
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params) {
 	std::string valid_commands[5] = {
-		"PING",
-		"PRIVMSG",
-		"MODE",
-		"JOIN",
-		"NICK"
+			"JOIN",
+			"PING",
+			"PRIVMSG",
+			"MODE",
+			"NICK"
 	};
 
 	int idx = 0;
@@ -279,11 +273,11 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		idx++;
 	}
 	switch (idx + 1) {
-		case 1: ping(client.get_fd(), params); break;
-		case 2: _handle_privmsg(client, params); break;
-		case 3: _mode(client.get_fd(), params); break;
-//		case 3: join(client.get_fd(), params); break;
-//		case 4: nick(client.get_fd(), params); break;
+		case 1: join(*this, client, params); break;
+		case 2: ping(client, params); break;
+		case 3: _handle_privmsg(client, params); break;
+		case 4: _mode(client.get_fd(), params); break;
+//		case 5: client.set_nickname(params[1]); break;
 	}
 }
 
@@ -406,4 +400,19 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 		MessageHandler::send_to_client(client.get_nick(), params, this);
 	else {
 		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
+}
+
+void TcpListener::add_channel(Channel *channel) {
+	this->_channels.insert(std::pair<std::string, Channel *>(channel->get_name(), channel));
+}
+
+void TcpListener::print_channels() {
+	std::map<std::string, Channel *> channels = this->get_channels();
+
+	std::map<std::string, Channel *>::iterator it = channels.begin();
+	std::cout << "CHANNELS LIST:" << std::endl;
+	while (it != channels.end()) {
+		std::cout << it->first << std::endl;
+		it++;
+	}
 }
