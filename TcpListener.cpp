@@ -394,7 +394,7 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 
 	Channel *chan = _is_channel(params[0]);
 	if (chan){
-		chan->send_message(client.get_nick(), params[1]);
+		chan->send_message(client.get_nick(), params);
 	}
 	else if (!_nickname_available(params[0]))
 		MessageHandler::send_to_client(client.get_nick(), params, this);

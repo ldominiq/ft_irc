@@ -23,7 +23,7 @@ public:
 	std::string				get_name() {return _name;};
 	void					add_user(Client *client);
 	std::vector<Client *>	get_users() { return _users; };
-	bool					send_message(std::string nick, std::string &msg);
+	bool					send_message(std::string sender, std::vector<std::string> &params);
 private:
     std::string _name;
     std::string _topic;

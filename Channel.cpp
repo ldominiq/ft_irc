@@ -25,15 +25,20 @@ Channel::~Channel() {
 
 }
 
-bool Channel::send_message(std::string nick, std::string &msg)
+bool Channel::send_message(std::string sender, std::vector<std::string> &params)
 {
-	std::cout << "send_message got " << msg << " from " << nick;
-	// DO ALL SORTS OF SHENANIGANS
-//	std::vector<Client *>::iterator it = _users.begin();
-//	for (; it != _users.end(); it++)
-//	{
-//
-//	}
+	// reformat message before sending
+	std::string message = ":" + sender + " PRIVMSG "; // + _name + " :" + params[1] + "\r\n";
+
+	for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++)
+		message += *it + " ";
+	std::cout << "msg for chan: " << message << std::endl;
+	// send message to all users in channel
+	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+	{
+		if ((*it)->get_nick() != sender)
+			MessageHandler::HandleMessage((*it)->get_fd(), message + "\r\n");
+	}
 	return false;
 }
 
