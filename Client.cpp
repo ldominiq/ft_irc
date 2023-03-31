@@ -77,7 +77,6 @@ bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
 									 _username + " " + "USER" + " :Not enough parameters");
 		return (false); }
 
-	// HELLO THIS IS A TEST
 	std::istringstream splitout(userdata);
 	std::string u;
 
