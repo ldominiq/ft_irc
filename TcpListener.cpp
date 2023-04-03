@@ -360,29 +360,6 @@ Client &TcpListener::get_client(std::string &nick)
 	throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }
 
-void TcpListener::_handle_join(Client &client, std::vector<std::string> &params)
-{
-	if (params.empty())
-		MessageHandler::numericReply(client.get_fd(), "461", "JOIN :Not enough parameters");
-	else if (params.size() > 1)
-		MessageHandler::numericReply(client.get_fd(), "461", "JOIN :Too many parameters");
-	else
-	{
-		if (params[0][0] != '&')
-			MessageHandler::numericReply(client.get_fd(), "403", params[0] + " :No such channel");
-		else
-		{ // handle multi-channels or not? If yes, how? This version doesn't handle it
-			//					if (client.get_channel() != NULL)
-			//						client.get_channel()->remove_client(client.get_fd());
-			//					client.set_channel(this->_channels[params[0]]);
-			//					client.get_channel()->add_client(client.get_fd());
-			MessageHandler::HandleMessage(client.get_fd(), ":" + client.get_nick() + "!" + client.get_username() + "@" +
-										  client.get_hostname() + " JOIN " + params[0]);
-			// todo: verify that this copilot generated message makes any sense
-		}
-	}
-}
-
 void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &params)
 { // todo: alll error messages are copilot generated, check if they are correct or behavior must be different
 	if (params.size() < 1) {
