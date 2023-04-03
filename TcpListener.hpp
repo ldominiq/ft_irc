@@ -68,7 +68,6 @@ private:
 	std::map<std::string, Channel *>    _channels;
 
 	void _handle_privmsg(Client &client, std::vector<std::string> &params);
-	static void _handle_join(Client &client, std::vector<std::string> &params);
 };
 
 #endif
