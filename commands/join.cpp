@@ -5,10 +5,10 @@
 #include "../CommandHandler.hpp"
 
 
-Channel *new_channel(TcpListener &SERV, std::string channel_name) {
+Channel *new_channel(TcpListener &SERV, std::string channel_name, std::string op) {
 	std::cout << "NEW CHANNEL: " << channel_name << std::endl;
 
-	Channel* channel = new Channel(channel_name);
+	Channel* channel = new Channel(channel_name, op);
 	SERV.add_channel(channel);
 	return channel;
 }
@@ -28,7 +28,7 @@ void join(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 	// if channel doesn't exist, create it
 	std::map<std::string, Channel *>::iterator it = channels.find(channel_name);
 	if (it == channels.end()) {
-		channel = new_channel(SERV, channel_name);
+		channel = new_channel(SERV, channel_name, client.get_nick());
 	}
 	else
 		channel = it->second;

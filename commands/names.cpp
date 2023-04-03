@@ -10,7 +10,10 @@ void	names(Client &client, Channel &channel) {
 	std::string msg;
 	for (std::vector<Client*>::iterator it = users.begin(); it != users.end(); ++it) {
 		Client* user = *it;
-		msg += user->get_nick() + " ";
+		if (channel.get_operator() == user->get_nick())
+			msg += "@" + user->get_nick() + " ";
+		else
+			msg += user->get_nick() + " ";
 	}
 
 	MessageHandler::HandleMessage(client.get_fd(), RPL_NAMREPLY(client.get_nick(), channel.get_name(), msg));
