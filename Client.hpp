@@ -23,8 +23,8 @@ public:
     Client(int fd, std::string hostname);
     ~Client();
 
-	bool								set_nickname(const std::string &nick, std::list<Client *>     &_clients, TcpListener	&SERV);
-	bool								set_userdata(const std::string &userdata, TcpListener	&SERV);
+	bool								set_nickname(const std::string &nick, TcpListener	&SERV);
+	bool								set_userdata(const std::string &userdata);
 	void								set_registered();
 	void								set_connected();
 	int									get_fd() const { return _clientFd;};

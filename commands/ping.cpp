@@ -6,13 +6,13 @@
 #include "../MessageHandler.hpp"
 
 
-void ping(int client_fd, std::vector<std::string> params) {
+void ping(int client_fd) {
 	MessageHandler::HandleMessage(client_fd,
 								  ":localhost PONG localhost :sbars\r\n");
 	std::cout << "PONG" << std::endl;
 }
 
-void _mode(int fd, std::vector<std::string> params)
+void _mode(int fd)
 {
 	MessageHandler::HandleMessage(fd,
 								  ":sbars MODE sbars :+i\r\n");
