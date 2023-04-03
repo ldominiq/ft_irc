@@ -5,13 +5,13 @@
 #include "MessageHandler.hpp"
 #include "utils.hpp"
 
-Client::Client(int fd, std::string hostname) : _registered(false), _connected(false), _clientFd(fd), _hostname(hostname), _nickname(), _username(), _channels()
+Client::Client(int fd, std::string hostname) : _registered(false), _connected(false), _clientFd(fd), _nickname(), _username(), _channels(), _hostname(hostname)
 {}
 
 Client::~Client()
 {}
 
-bool Client::set_nickname(const std::string &nick, std::list<Client *> &clients, TcpListener &SERV) {
+bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
     if (nick.length() <= 5) {
         MessageHandler::numericReply(_clientFd, "431", ":No nickname given");
         return false;
@@ -70,7 +70,7 @@ static bool is_valid_username(std::string u) {
 	return true;
 }
 
-bool Client::set_userdata(const std::string &userdata, TcpListener	&SERV)
+bool Client::set_userdata(const std::string &userdata)
 {
 	if (userdata.length() <= 5) { // A.K.A if there is nothing after the command
 		MessageHandler::numericReply(_clientFd, "461",

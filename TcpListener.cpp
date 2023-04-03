@@ -220,12 +220,12 @@ void TcpListener::_registration(std::string msg, Client &client) {
 		return;
 	}
 	if (msg.find("NICK") == 0){
-		if (!client.set_nickname(msg, this->_clients, *this))
+		if (!client.set_nickname(msg, *this))
 			_handle_error("other nickname error");
 		_skip_line(msg);
 	}
 	if (msg.find("USER") == 0) {
-		if (!client.set_userdata(msg, *this))
+		if (!client.set_userdata(msg))
 			_handle_error("other username error");
 		_skip_line(msg);
 	}
@@ -275,9 +275,9 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	}
 	switch (idx + 1) {
 		case 1: join(*this, client, params); break;
-		case 2: ping(client.get_fd(), params); break;
+		case 2: ping(client.get_fd()); break;
 		case 3: _handle_privmsg(client, params); break;
-		case 4: _mode(client.get_fd(), params); break;
+		case 4: _mode(client.get_fd()); break;
 //		case 5: client.set_nickname(params[1]); break;
 	}
 }
@@ -414,9 +414,11 @@ void TcpListener::print_channels() {
 	while (it != channels.end()) {
 		std::vector<Client *> users = it->second->get_users();
 		std::cout << "USERS IN CHANNEL:" << it->first << std::endl;
-		for (Client* user : users) {
+		for (std::vector<Client*>::iterator it2 = users.begin(); it2 != users.end(); ++it2) {
+			Client* user = *it2;
 			std::cout << user->get_nick() << " ";
 		}
+
 		std::cout << std::endl;
 		it++;
 	}

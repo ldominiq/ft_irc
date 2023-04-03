@@ -6,9 +6,10 @@
 
 void	names(Client &client, Channel &channel) {
 
-	std::vector<Client *> users = channel.get_users();
+	std::vector<Client*> users = channel.get_users();
 	std::string msg;
-	for (Client* user : users) {
+	for (std::vector<Client*>::iterator it = users.begin(); it != users.end(); ++it) {
+		Client* user = *it;
 		msg += user->get_nick() + " ";
 	}
 
