@@ -15,4 +15,8 @@
 #define RPL_MOTD(client, motd_line) (":localhost 372 " + client + " :" + motd_line + "\r\n")
 #define RPL_ENDOFMOTD(client) (":localhost 376 " + client + " :End of /MOTD command.\r\n")
 
+#define RPL_TOPIC(client, channel, topic) (":localhost 332 " + client + " " + channel + " :" + topic + "\r\n")
+#define RPL_NAMREPLY(client, channel, users) (":localhost 353 " + client + " = " + channel + " :" + users + "\r\n")
+#define RPL_ENDOFNAMES(client, channel) (":localhost 366 " + client + " " + channel + " :End of /NAMES list" + "\r\n")
+
 #endif //FT_IRC_NUMERIC_REPLIES_HPP
