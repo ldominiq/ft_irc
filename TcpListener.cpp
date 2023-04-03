@@ -221,12 +221,12 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	}
 	if (msg.find("NICK") == 0){
 		if (!client.set_nickname(msg, *this))
-			_handle_error("other nickname error");
+			return ;
 		_skip_line(msg);
 	}
 	if (msg.find("USER") == 0) {
 		if (!client.set_userdata(msg))
-			_handle_error("other username error");
+			return ;
 		_skip_line(msg);
 	}
 	client.get_infos();
@@ -278,7 +278,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 2: ping(client.get_fd()); break;
 		case 3: _handle_privmsg(client, params); break;
 		case 4: _mode(client.get_fd()); break;
-//		case 5: client.set_nickname(params[1]); break;
+		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
 	}
 }
 
