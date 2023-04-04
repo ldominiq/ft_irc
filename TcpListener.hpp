@@ -46,7 +46,7 @@ public:
 	std::map<std::string, Channel *>& get_channels() { return _channels; }
 	void 			add_channel(Channel *channel);
 	void 			print_channels();
-	Channel*		_is_channel(std::string &chan_name);
+	Channel*		_is_channel(std::basic_string<char> chan_name);
 	void			_disconnect_client(int client_fd);
 private:
     int             _CreateSocket() const;
@@ -58,6 +58,8 @@ private:
 	int 			_handle_new_connection(int listening_fd);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
+	void			_handle_privmsg(Client &client, std::vector<std::string> &params);
+	void			_part_channel(Client &client, std::basic_string<char> chan, const char *reason);
 
     std::string                 _ipAddress;
 	std::string					_password;
@@ -65,10 +67,7 @@ private:
     std::list<Client *>     	_clients;
 	int     					_nfds;
 	struct pollfd       		_fds[10];
-	std::string 				_commands[20];
 	std::map<std::string, Channel *>    _channels;
-
-	void _handle_privmsg(Client &client, std::vector<std::string> &params);
 };
 
 #endif
