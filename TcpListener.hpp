@@ -47,12 +47,12 @@ public:
 	void 			add_channel(Channel *channel);
 	void 			print_channels();
 	Channel*		_is_channel(std::string &chan_name);
+	void			_disconnect_client(int client_fd);
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
     static void     _handle_error(const char *msg);
 	void			_process_msg(const std::string& msg, Client &client);
-	void			_disconnect_client(int client_fd);
 	void			_registration(std::string msg, Client &client);
 	static void		_connection(Client &client);
 	int 			_handle_new_connection(int listening_fd);
