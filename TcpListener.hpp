@@ -26,7 +26,7 @@ class Channel;
 
 class TcpListener {
 public:
-    TcpListener(const std::string& ipAddress, int port);
+    TcpListener(const std::string& ipAddress, int port, std::string password);
     virtual ~TcpListener();
 
     // Send a message to the specified client
@@ -60,6 +60,7 @@ private:
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
 
     std::string                 _ipAddress;
+	std::string					_password;
     int                         _port;
     std::list<Client *>     	_clients;
 	int     					_nfds;

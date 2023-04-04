@@ -4,8 +4,8 @@
 #include "TcpListener.hpp"
 #include "CommandHandler.hpp"
 
-TcpListener::TcpListener(const std::string& ipAddress, int port)
-: _ipAddress(ipAddress), _port(port) {
+TcpListener::TcpListener(const std::string& ipAddress, int port, std::string password)
+: _ipAddress(ipAddress), _password(password), _port(port) {
 	_commands[0] = "NICK";
 	_commands[1] = "USER";
 	_commands[2] = "JOIN";
@@ -207,7 +207,7 @@ void TcpListener::_registration(std::string msg, Client &client) {
 	if (msg.find("PASS") == 0)
 	{
 		std::cout << msg.substr(5, 12) << std::endl;
-		if (msg.substr(5, 12) != "gigacoolchat") {
+		if (msg.substr(5, _password.length()) != _password) {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
 			_disconnect_client(client.get_fd());
 			return;
@@ -361,7 +361,7 @@ Client &TcpListener::get_client(std::string &nick)
 }
 
 void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &params)
-{ // todo: alll error messages are copilot generated, check if they are correct or behavior must be different
+{
 	if (params.size() < 1) {
 		MessageHandler::numericReply(client.get_fd(), "411", ":No recipient given (PRIVMSG)");
 		return; }
