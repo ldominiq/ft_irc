@@ -134,3 +134,7 @@ void Client::leave_channel(const std::string &channel_name)
 	_channels.erase(it);
 
 }
+
+void Client::set_operator() {
+	this->_operator = true;
+}
