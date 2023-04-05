@@ -414,13 +414,12 @@ void TcpListener::print_channels() {
 	}
 }
 
-void TcpListener::_part_channel(Client &client, std::string chan) {
+void TcpListener::_part_channel(Client &client, std::basic_string<char> chan, const char *reason) {
 	Channel *channel = _is_channel(chan);
 
 	if (channel) {
 		client.leave_channel(chan);
-//		print_channels();
-
+		print_channels();
 		if (channel->get_users().size() == 0) { // if last, delete channel
 			this->_channels.erase(chan); }
 		else { // send part to every user in channel
