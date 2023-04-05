@@ -336,8 +336,6 @@ Channel * TcpListener::_is_channel(std::basic_string<char> chan_name)
 	if (chan_name[0] != '&')
 		return nullptr;
 
-//	chan_name = chan_name.substr(1);
-
 	std::map<std::string, Channel *>::iterator it = this->_channels.find(chan_name);
 	if (it == this->_channels.end())
 		return nullptr;
