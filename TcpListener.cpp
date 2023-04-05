@@ -17,6 +17,9 @@ void TcpListener::Run() {
     int	listening_fd;
 
 	_creation_time = time(nullptr);
+	_version = "DEV.1";
+	_user_modes = "io";
+	_channel_modes = "";
 
     while (true) {
         listening_fd = _CreateSocket();
@@ -248,16 +251,17 @@ void TcpListener::_connection(Client &client) {
 	char datetime_str[20];
 	strftime(datetime_str, 20, "%H:%M:%S %b %d %Y", local_time);
 
-	std::string msg = RPL_WELCOME(user_id(nick, username), nick) +
-			RPL_YOURHOST(nick) +
-			RPL_CREATED(datetime_str) +
-			RPL_MYINFO();
-	MessageHandler::HandleMessage(client.get_fd(), msg);
+	const std::string user_id = user_id(nick, username);
+
+	MessageHandler::HandleMessage(client.get_fd(), RPL_WELCOME(nick));
+	MessageHandler::HandleMessage(client.get_fd(), RPL_YOURHOST(nick, this->_version));
+	MessageHandler::HandleMessage(client.get_fd(), RPL_CREATED(nick, datetime_str));
+	MessageHandler::HandleMessage(client.get_fd(),
+								  RPL_MYINFO(nick, this->_version, this->_user_modes, this->_channel_modes));
 
 	motd(client.get_fd(), nick);
 
 	client.set_connected();
-
 }
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
