@@ -98,7 +98,7 @@ void TcpListener::_disconnect_client(int client_fd) {
 	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
 		if (it->second->is_user_in_channel(client_fd)) {
 			std::cout << "channel: " << it->first << " - user: " << client.get_nick() << " is leaving" << std::endl;
-			_part_channel(client, it->first, "Leaving channel");
+			_part_channel(client, it->first);
 			// todo: send message to all channel members, but replace command below with a call to PART with "Leaving channel" as reason
 //			it->second->send_message(client.get_nick() + "!" + client.get_username() + "@" + client.get_username(), msg);
 		}
@@ -268,19 +268,19 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[] = {
+	std::string valid_commands[7] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
 			"MODE",
 			"NICK",
-			"USER"
-			//"PART"
+			"USER",
+			"PART"
 	};
 
 	int idx = 0;
 
-	while (idx < (int) valid_commands->size()) {
+	while (idx < 7) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -292,7 +292,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 4: _mode(client.get_fd()); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
 		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-		//case 7: part
+		case 7: _part_channel(client, params[0]); break;
 	}
 }
 
@@ -414,11 +414,13 @@ void TcpListener::print_channels() {
 	}
 }
 
-void TcpListener::_part_channel(Client &client, std::basic_string<char> chan, const char *reason) {
+void TcpListener::_part_channel(Client &client, std::string chan) {
 	Channel *channel = _is_channel(chan);
+
 	if (channel) {
 		client.leave_channel(chan);
-		print_channels();
+//		print_channels();
+
 		if (channel->get_users().size() == 0) { // if last, delete channel
 			this->_channels.erase(chan); }
 		else { // send part to every user in channel
@@ -426,8 +428,10 @@ void TcpListener::_part_channel(Client &client, std::basic_string<char> chan, co
 			for (std::vector<Client *>::iterator u_it = users.begin(); u_it != users.end(); u_it++)
 			{ // todo: put this in a function and join it with the one in _join_channel
 				if ((*u_it)->get_nick() != client.get_nick())
-					MessageHandler::HandleMessage((*u_it)->get_fd(), ":" + user_id(client.get_nick(),client.get_username()) + " PART " + chan + " :" + reason + "\r\n");
+					MessageHandler::HandleMessage((*u_it)->get_fd(), ":" + user_id(client.get_nick(),client.get_username()) + " PART " + chan+ " :Leaving Channel\r\n");
 			}
 		}
 	}
+	else
+		std::cout << "no channel found" << std::endl;
 }
