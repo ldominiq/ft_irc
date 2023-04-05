@@ -123,3 +123,14 @@ bool Client::in_channel(const std::string& channel_name) {
 		return false;
 	return true;
 }
+
+void Client::leave_channel(const std::string &channel_name)
+{
+	std::map<std::string, Channel *>::iterator it = _channels.find(channel_name);
+	if (it == _channels.end())
+		return;
+	Channel *channel = it->second;
+	channel->remove_user(this->get_fd());
+	_channels.erase(it);
+
+}

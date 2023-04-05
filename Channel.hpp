@@ -26,6 +26,8 @@ public:
 	std::string 			get_operator() { return _operator; }
 
 	void					add_user(Client *client);
+	bool					is_user_in_channel(int fd);
+	void					remove_user(int fd);
 	void					add_operator(std::string nick);
 	bool					send_message(std::string sender, std::vector<std::string> &params);
 private:
