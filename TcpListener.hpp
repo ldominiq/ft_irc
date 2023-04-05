@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <sys/poll.h>
 #include <list>
+#include <ctime>
 
 #include "Modifier.hpp"
 #include "Numeric_replies.hpp"
@@ -54,19 +55,20 @@ private:
     static void     _handle_error(const char *msg);
 	void			_process_msg(const std::string& msg, Client &client);
 	void			_registration(std::string msg, Client &client);
-	static void		_connection(Client &client);
+	void			_connection(Client &client);
 	int 			_handle_new_connection(int listening_fd);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
 
-    std::string                 _ipAddress;
-	std::string					_password;
-    int                         _port;
-    std::list<Client *>     	_clients;
-	int     					_nfds;
-	struct pollfd       		_fds[10];
-	std::string 				_commands[20];
+    std::string                 		_ipAddress;
+	std::string							_password;
+			int                         _port;
+    std::list<Client *>     			_clients;
+	int     							_nfds;
+	struct pollfd       				_fds[10];
+	std::string 						_commands[20];
 	std::map<std::string, Channel *>    _channels;
+	time_t								_creation_time;
 
 	void _handle_privmsg(Client &client, std::vector<std::string> &params);
 };

@@ -24,6 +24,8 @@ void TcpListener::Send(int clientSocket, const std::string& msg) {
 void TcpListener::Run() {
     int	listening_fd;
 
+	_creation_time = time(nullptr);
+
     while (true) {
         listening_fd = _CreateSocket();
         if (listening_fd == -1)
@@ -238,9 +240,14 @@ void TcpListener::_connection(Client &client) {
 
 	std::string nick = client.get_nick();
 	std::string username = client.get_username();
+
+	struct tm* local_time = localtime(&_creation_time);
+	char datetime_str[20];
+	strftime(datetime_str, 20, "%H:%M:%S %b %d %Y", local_time);
+
 	std::string msg = RPL_WELCOME(user_id(nick, username), nick) +
 			RPL_YOURHOST(nick) +
-			RPL_CREATED("TODAY") +
+			RPL_CREATED(datetime_str) +
 			RPL_MYINFO() +
 			RPL_MOTDSTART(nick) +
 			RPL_MOTD(nick, "- WELCOME !!!!") +
