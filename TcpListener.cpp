@@ -263,7 +263,7 @@ void TcpListener::_connection(Client &client) {
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
 
-	std::string valid_commands[] = {
+	std::string valid_commands[7] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
@@ -276,7 +276,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 
 	int idx = 0;
 
-	while (idx < (int) valid_commands->size()) {
+	while (idx < 7) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -288,7 +288,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 4: _mode(client.get_fd()); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
 		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-    	case 7: motd(client.get_fd(), client.get_nick());
+    	case 7: motd(client.get_fd(), client.get_nick()); break;
 		//case 7: part
 	}
 }
