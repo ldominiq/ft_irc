@@ -11,10 +11,3 @@ void ping(int client_fd) {
 								  ":localhost PONG localhost :sbars\r\n");
 	std::cout << "PONG" << std::endl;
 }
-
-void _mode(int fd)
-{
-	MessageHandler::HandleMessage(fd,
-								  ":sbars MODE sbars :+i\r\n");
-	std::cout << "mode" << std::endl;
-}

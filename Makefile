@@ -22,6 +22,7 @@ SRCS        :=  Channel.cpp \
                 commands/ping.cpp \
                 commands/motd.cpp \
                 commands/oper.cpp \
+                commands/mode.cpp \
 
 OBJS        := ${SRCS:.cpp=.o}
 
