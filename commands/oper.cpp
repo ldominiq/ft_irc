@@ -4,7 +4,7 @@
 
 #include "../CommandHandler.hpp"
 
-void	oper(Client &client, std::vector<std::string> params) {
+void	oper(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 	if (client.is_operator()) {
 		return;
 	}
@@ -23,5 +23,9 @@ void	oper(Client &client, std::vector<std::string> params) {
 	}
 	client.set_operator();
 	MessageHandler::HandleMessage(client.get_fd(), RPL_YOUREOPER(user_id));
-	_mode(client.get_fd());
+
+	std::vector<std::string> mode;
+	mode.push_back(client.get_nick());
+	mode.push_back("+o");
+	_mode(SERV, client, mode);
 }
