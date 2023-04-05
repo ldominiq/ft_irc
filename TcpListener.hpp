@@ -71,8 +71,6 @@ private:
 	std::string 						_commands[20];
 	std::map<std::string, Channel *>    _channels;
 	time_t								_creation_time;
-
-	void _handle_privmsg(Client &client, std::vector<std::string> &params);
 };
 
 #endif
