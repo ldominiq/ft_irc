@@ -65,12 +65,11 @@ bool Channel::is_user_in_channel(int fd)
 
 void Channel::remove_user(int fd)
 {
-	for (std::vector<Client*>::iterator it = _users.begin(); it != _users.end(); ) {
+	for (std::vector<Client*>::iterator it = _users.begin(); it != _users.end(); ++it) {
 		if ((*it)->get_fd() == fd) {
 			std::cout << "removing user " << (*it)->get_nick() << std::endl;
-			it = _users.erase(it);
-		} else {
-			++it;
+			_users.erase(it);
+			return ;
 		}
 	}
 }
