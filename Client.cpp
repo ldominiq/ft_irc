@@ -132,7 +132,7 @@ void Client::leave_channel(const std::string &channel_name)
 	Channel *channel = it->second;
 	channel->remove_user(this->get_fd());
 	_channels.erase(it);
-
+	MessageHandler::HandleMessage(this->get_fd(), ":" + user_id(_nickname, _username) + " PART :" + channel_name + "\r\n");
 }
 
 void Client::set_operator() {

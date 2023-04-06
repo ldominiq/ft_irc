@@ -60,7 +60,7 @@ private:
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
 	void			_handle_privmsg(Client &client, std::vector<std::string> &params);
-	void			_part_channel(Client &client, std::basic_string<char> chan, const char *reason);
+	void			_part_channel(Client &client,  std::string chan);
 
     std::string                 		_ipAddress;
 	std::string							_password;
