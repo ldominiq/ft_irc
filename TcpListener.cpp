@@ -273,7 +273,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 			"MODE",
 			"NICK",
 			"USER",
-      "motd",
+			"motd",
 			"OPER",
 			"PART"
 	};
@@ -291,8 +291,8 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 3: _handle_privmsg(client, params); break;
 		case 4: _mode(*this, client, params); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
-		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-    case 7: motd(client.get_fd(), client.get_nick()); break;
+		case 6: client.set_userdata("error"); break;
+		case 7: motd(client.get_fd(), client.get_nick()); break;
 		case 8: oper(*this, client, params); break;
 		case 9: _part_channel(client, params[0]); break;
 	}
