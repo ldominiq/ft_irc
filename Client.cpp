@@ -47,7 +47,7 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
         } else {
 			MessageHandler::HandleMessage(_clientFd, trimmed_nick + " " + trimmed_nick + " :Nickname is already in use");
 		}
-		SERV._disconnect_client(this->_clientFd);
+		SERV._disconnect_client(*this);
         return false;
     }
 }
@@ -124,15 +124,12 @@ bool Client::in_channel(const std::string& channel_name) {
 	return true;
 }
 
-void Client::leave_channel(const std::string &channel_name)
+void Client::leave_channel(Channel& channel)
 {
-	std::map<std::string, Channel *>::iterator it = _channels.find(channel_name);
-	if (it == _channels.end())
-		return;
-	Channel *channel = it->second;
-	channel->remove_user(this->get_fd());
-	_channels.erase(it);
-	MessageHandler::HandleMessage(this->get_fd(), ":" + user_id(_nickname, _username) + " PART :" + channel_name + "\r\n");
+	std::cout << "channel: " << channel.get_name() << " - user: " << this->get_nick() << " is leaving" << std::endl;
+	channel.remove_user(this->get_fd());
+	_channels.erase(channel.get_name());
+	MessageHandler::HandleMessage(this->get_fd(), ":" + user_id(_nickname, _username) + " PART :" + channel.get_name() + "\r\n");
 }
 
 void Client::set_operator() {

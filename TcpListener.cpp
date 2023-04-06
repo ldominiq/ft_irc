@@ -86,32 +86,43 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
-void TcpListener::_disconnect_client(int client_fd) {
+void TcpListener::_disconnect_client(Client &client)
+{
 	std::cout << "Client disconnected" << std::endl;
-	close(client_fd);
+	close(client.get_fd());
 	for (int i=0; i < _nfds; i++) {
-		if (_fds[i].fd == client_fd) {
+		if (_fds[i].fd == client.get_fd()) {
 			_fds[i] = _fds[_nfds - 1];
 			break;
 		}
 	}
 
-	Client&	client = get_client(client_fd);
 	// if user is in a channel, notify that he leaves and remove him from list
-	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
-		if (it->second->is_user_in_channel(client_fd)) {
-			std::cout << "channel: " << it->first << " - user: " << client.get_nick() << " is leaving" << std::endl;
-			_part_channel(client, it->first);
-			// todo: send message to all channel members, but replace command below with a call to PART with "Leaving channel" as reason
-//			it->second->send_message(client.get_nick() + "!" + client.get_username() + "@" + client.get_username(), msg);
-		}
+	std::map<std::string, Channel *>::iterator it = _channels.begin();
+	while (it != _channels.end()) {
+		bool erased = false;
+		Channel* chan = it->second; // pour la lisibilité
+		if (chan->is_user_in_channel(client.get_fd())) {
+			client.leave_channel(*chan);
+			if (chan->get_users().empty()) { // if last, delete channel
+				it = _channels.erase(it); // set iterator to next channel
+				erased = true;
+			}
+			else { // send quit to remaining channel users
+				chan->send_to_users(client.get_nick(), ":" + user_id(client.get_nick(), client.get_username()) +" QUIT :Quit: Leaving", false);
+			}}
+		if (_channels.begin() == _channels.end())
+			break;
+		else
+			print_channels();
+		if (!erased)
+			it++;
 	}
-	delete_client(client_fd);
+	delete_client(client.get_fd());
 	_nfds--;
 }
 
 int TcpListener::_handle_new_connection(int listening_fd) {
-
 	struct sockaddr_in  client_addr;
 	socklen_t           client_addr_size;
 	int                 client_fd = -1;
@@ -157,7 +168,7 @@ int TcpListener::_handle_message(int i) {
 
 	// Check to see if the connection has been closed by the client
 	if (bytes_received == 0) {
-		_disconnect_client(_fds[i].fd);
+		_disconnect_client(get_client(_fds[i].fd));
 		return -1;
 	}
 	std::cout << bytes_received << " bytes received." << std::endl;
@@ -217,14 +228,14 @@ void TcpListener::_registration(std::string msg, Client &client) {
 		std::cout << msg.substr(5, 12) << std::endl;
 		if (msg.substr(5, _password.length()) != _password) {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
-			_disconnect_client(client.get_fd());
+			_disconnect_client(client);
 			return;
 		}
 		_skip_line(msg);
 	}
 	else {
 		MessageHandler::numericReply(client.get_fd(), "461", " :Password required");
-		_disconnect_client(client.get_fd());
+		_disconnect_client(client);
 		return;
 	}
 	if (msg.find("NICK") == 0){
@@ -266,21 +277,22 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[9] = {
+	std::string valid_commands[10] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
 			"MODE",
 			"NICK",
 			"USER",
-      "motd",
+      		"motd",
 			"OPER",
-			"PART"
+			"PART",
+			"QUIT"
 	};
 
 	int idx = 0;
 
-	while (idx < 9) {
+	while (idx < 10) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -292,9 +304,10 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 4: _mode(*this, client, params); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
 		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-    case 7: motd(client.get_fd(), client.get_nick()); break;
+		case 7: motd(client.get_fd(), client.get_nick()); break;
 		case 8: oper(*this, client, params); break;
 		case 9: _part_channel(client, params[0]); break;
+		case 10: _disconnect_client(client); break;
 	}
 }
 
@@ -387,7 +400,7 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 
 	Channel *chan = _is_channel(params[0]);
 	if (chan){
-		chan->send_message(client.get_nick(), params);
+		chan->send_privmsg(client.get_nick(), params);
 	}
 	else if (!_nickname_available(params[0]))
 		MessageHandler::send_to_client(client.get_nick(), params, this);
@@ -420,7 +433,7 @@ void TcpListener::_part_channel(Client &client, std::string chan) {
 	Channel *channel = _is_channel(chan);
 
 	if (channel) {
-		client.leave_channel(chan);
+		client.leave_channel(*channel);
 //		print_channels();
 
 		if (channel->get_users().size() == 0) { // if last, delete channel
