@@ -38,7 +38,7 @@ public:
 	void								get_infos();
 	std::map<std::string, Channel *>& 	get_channels() { return _channels; }
 	void 								join_channel(Channel *channel);
-	void 								leave_channel(const std::string& channel_name);
+	void 								leave_channel(Channel &channel);
 	bool								in_channel(const std::string& channel_name);
 private:
 	Client() {};

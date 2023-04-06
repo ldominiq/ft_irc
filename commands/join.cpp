@@ -49,7 +49,7 @@ void join(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 			for (std::vector<Client *>::iterator u_it = users.begin(); u_it != users.end(); u_it++)
 			{
 				if ((*u_it)->get_nick() != client.get_nick())
-					MessageHandler::HandleMessage((*u_it)->get_fd(), msg + "\r\n");
+					MessageHandler::HandleMessage((*u_it)->get_fd(), msg);
 			}
 			if (!channel->get_topic().empty())
 				MessageHandler::HandleMessage(client.get_fd(), RPL_TOPIC(client.get_nick(), channel_name, channel->get_topic()));

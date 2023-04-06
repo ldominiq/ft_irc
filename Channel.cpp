@@ -26,7 +26,7 @@ Channel::~Channel() {
 
 }
 
-bool Channel::send_message(std::string sender, std::vector<std::string> &params)
+bool Channel::send_privmsg(std::string sender, std::vector<std::string> &params)
 {
 	// reformat message before sending
 	std::string message = ":" + sender + " PRIVMSG "; // + _name + " :" + params[1] + "\r\n";
@@ -35,12 +35,17 @@ bool Channel::send_message(std::string sender, std::vector<std::string> &params)
 		message += *it + " ";
 	std::cout << "msg for chan: " << message << std::endl;
 	// send message to all users in channel
+	send_to_users(sender, message, false);
+	return false;
+}
+
+void Channel::send_to_users(std::string sender, std::string message, bool self)
+{
 	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
-		if ((*it)->get_nick() != sender)
+		if (!self && (*it)->get_nick() != sender)
 			MessageHandler::HandleMessage((*it)->get_fd(), message + "\r\n");
 	}
-	return false;
 }
 
 void Channel::add_user(Client *client) {
@@ -65,7 +70,7 @@ bool Channel::is_user_in_channel(int fd)
 
 void Channel::remove_user(int fd)
 {
-	for (std::vector<Client*>::iterator it = _users.begin(); it != _users.end(); ++it) {
+	for (std::vector<Client*>::iterator it = _users.begin(); it != _users.end(); it++) {
 		if ((*it)->get_fd() == fd) {
 			std::cout << "removing user " << (*it)->get_nick() << std::endl;
 			_users.erase(it);

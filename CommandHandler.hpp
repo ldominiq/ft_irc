@@ -6,6 +6,7 @@
 #define COMMAND_HANDLER_HPP
 
 #include <vector>
+#include <map>
 #include "Client.hpp"
 
 void 	join(TcpListener &SERV, Client &client, std::vector<std::string> params);
