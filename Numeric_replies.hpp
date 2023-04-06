@@ -26,5 +26,9 @@
 #define ERR_NEEDMOREPARAMS(client, command) (":localhost 461 " + client + " " + command + " :Not enough parameters\r\n")
 #define ERR_PASSWDMISMATCH(client) (":localhost 464 " + client + " :Password incorrect\r\n")
 #define ERR_NOOPERHOST(client) (":localhost 491 " + client + " :Invalid credentials\r\n")
+#define ERR_NOSUCHNICK(user_id, target) (":localhost 401 " + user_id + " " + target + " :No such nick\r\n")
+#define ERR_NOSUCHCHANNEL(user_id, target) (":localhost 403 " + user_id + " " + target + " :No such channel\r\n")
+#define ERR_USERSDONTMATCH(user_id) (":localhost 502 " + user_id + " :Cant change mode for other users\r\n")
+#define ERR_NOPRIVILEGES(user_id) (":localhost 481 " + user_id + " :Permission Denied- You're not an IRC operator\r\n")
 
 #endif //FT_IRC_NUMERIC_REPLIES_HPP
