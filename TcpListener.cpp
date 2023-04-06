@@ -414,7 +414,7 @@ void TcpListener::print_channels() {
 	}
 }
 
-void TcpListener::_part_channel(Client &client, std::basic_string<char> chan, const char *reason) {
+void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
 	Channel *channel = _is_channel(chan);
 
 	if (channel) {
