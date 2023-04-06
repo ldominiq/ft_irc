@@ -19,4 +19,12 @@
 #define RPL_NAMREPLY(client, channel, users) (":localhost 353 " + client + " = " + channel + " :" + users + "\r\n")
 #define RPL_ENDOFNAMES(client, channel) (":localhost 366 " + client + " " + channel + " :End of /NAMES list" + "\r\n")
 
+#define RPL_YOUREOPER(client) (":localhost 381 " + client + " :You are now an IRC operator\r\n")
+
+// ERRORS
+
+#define ERR_NEEDMOREPARAMS(client, command) (":localhost 461 " + client + " " + command + " :Not enough parameters\r\n")
+#define ERR_PASSWDMISMATCH(client) (":localhost 464 " + client + " :Password incorrect\r\n")
+#define ERR_NOOPERHOST(client) (":localhost 491 " + client + " :Invalid credentials\r\n")
+
 #endif //FT_IRC_NUMERIC_REPLIES_HPP
