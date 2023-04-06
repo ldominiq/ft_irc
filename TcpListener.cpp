@@ -273,7 +273,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 			"MODE",
 			"NICK",
 			"USER",
-      "motd",
+			"motd",
 			"OPER",
 			"PART"
 	};
@@ -291,8 +291,8 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 3: _handle_privmsg(client, params); break;
 		case 4: _mode(*this, client, params); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
-		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-    case 7: motd(client.get_fd(), client.get_nick()); break;
+		case 6: client.set_userdata("error"); break;
+		case 7: motd(client.get_fd(), client.get_nick()); break;
 		case 8: oper(*this, client, params); break;
 		case 9: _part_channel(client, params[0]); break;
 	}
@@ -416,13 +416,12 @@ void TcpListener::print_channels() {
 	}
 }
 
-void TcpListener::_part_channel(Client &client, std::string chan) {
+void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
 	Channel *channel = _is_channel(chan);
 
 	if (channel) {
 		client.leave_channel(chan);
-//		print_channels();
-
+		print_channels();
 		if (channel->get_users().size() == 0) { // if last, delete channel
 			this->_channels.erase(chan); }
 		else { // send part to every user in channel

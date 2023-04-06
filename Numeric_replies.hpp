@@ -22,8 +22,8 @@
 #define RPL_YOUREOPER(nick) (":localhost 381 " + nick + " :You are now an IRC operator\r\n")
 
 // ERRORS
-
 #define ERR_NEEDMOREPARAMS(client, command) (":localhost 461 " + client + " " + command + " :Not enough parameters\r\n")
+#define ERR_ALREADYREGISTERED(client) (":localhost 462 " + client + " :You are already registered\r\n")
 #define ERR_PASSWDMISMATCH(client) (":localhost 464 " + client + " :Password incorrect\r\n")
 #define ERR_NOOPERHOST(client) (":localhost 491 " + client + " :Invalid credentials\r\n")
 #define ERR_NOSUCHNICK(user_id, target) (":localhost 401 " + user_id + " " + target + " :No such nick\r\n")

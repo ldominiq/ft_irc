@@ -26,6 +26,9 @@ add_executable(ft_irc
         CommandHandler.hpp
         commands/join.cpp
         commands/ping.cpp
-        commands/names.cpp)
+        commands/names.cpp
+        commands/motd.cpp
+        commands/oper.cpp
+        commands/mode.cpp)
 
 add_definitions(-DCATCH_CONFIG_MAIN)
