@@ -20,6 +20,7 @@ SRCS        :=  Channel.cpp \
                 commands/join.cpp \
                 commands/names.cpp \
                 commands/ping.cpp \
+                commands/motd.cpp \
 
 OBJS        := ${SRCS:.cpp=.o}
 

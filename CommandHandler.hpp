@@ -8,11 +8,12 @@
 #include <vector>
 #include "Client.hpp"
 
-void join(TcpListener &SERV, Client &client, std::vector<std::string> params);
+void 	join(TcpListener &SERV, Client &client, std::vector<std::string> params);
 //void nick(int client_fd, std::vector<std::string> params);
-void ping(int client_fd);
-void _mode(int fd);
+void 	ping(int client_fd);
+void 	_mode(int fd);
 //void privmsg(int client_fd, std::vector<std::string> params);
-void names(Client &client, Channel &channel);
+void	names(Client &client, Channel &channel);
+void	motd(int client_fd, std::string nick);
 
 #endif

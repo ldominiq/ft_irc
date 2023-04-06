@@ -251,16 +251,10 @@ void TcpListener::_connection(Client &client) {
 	std::string msg = RPL_WELCOME(user_id(nick, username), nick) +
 			RPL_YOURHOST(nick) +
 			RPL_CREATED(datetime_str) +
-			RPL_MYINFO() +
-			RPL_MOTDSTART(nick) +
-			RPL_MOTD(nick, "- WELCOME !!!!") +
-			RPL_MOTD(nick, "-  O") +
-			RPL_MOTD(nick, "-  |") +
-			RPL_MOTD(nick, "- / \\") +
-			RPL_MOTD(nick, "-  |") +
-			RPL_MOTD(nick, "- / \\") +
-			RPL_ENDOFMOTD(nick);
+			RPL_MYINFO();
 	MessageHandler::HandleMessage(client.get_fd(), msg);
+
+	motd(client.get_fd(), nick);
 
 	client.set_connected();
 
@@ -268,19 +262,20 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[7] = {
+	std::string valid_commands[8] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
 			"MODE",
 			"NICK",
 			"USER",
+      "motd",
 			"PART"
 	};
 
 	int idx = 0;
 
-	while (idx < 7) {
+	while (idx < 8) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -292,7 +287,8 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 4: _mode(client.get_fd()); break;
 		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
 		case 6: client.set_userdata("USER " + params[0] + " " + params[1] + " " + params[2] + " " + params[3] + "\r\n"); break;
-		case 7: _part_channel(client, params[0]); break;
+    case 7: motd(client.get_fd(), client.get_nick()); break;
+		case 8: _part_channel(client, params[0]); break;
 	}
 }
 
