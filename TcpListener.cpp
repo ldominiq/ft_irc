@@ -88,6 +88,9 @@ int TcpListener::_CreateSocket() const {
 
 void TcpListener::_disconnect_client(Client &client)
 {
+	// send ERROR message to client
+	MessageHandler::HandleMessage(client.get_fd(), "ERROR :Closing link: Client disconnected\r\n");
+
 	std::cout << "Client disconnected" << std::endl;
 	close(client.get_fd());
 	for (int i=0; i < _nfds; i++) {
