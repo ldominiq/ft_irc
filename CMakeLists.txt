@@ -28,8 +28,7 @@ add_executable(ft_irc
         commands/ping.cpp
         commands/names.cpp
         commands/motd.cpp
-        commands/mode.cpp
         commands/oper.cpp
-        )
+        commands/mode.cpp)
 
 add_definitions(-DCATCH_CONFIG_MAIN)

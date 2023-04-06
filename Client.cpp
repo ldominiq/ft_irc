@@ -79,6 +79,10 @@ static bool is_valid_username(std::string u) {
 
 bool Client::set_userdata(const std::string &userdata)
 {
+	if (userdata == "error") {
+		MessageHandler::HandleMessage(this->get_fd(), ERR_ALREADYREGISTERED(this->get_nick()));
+		return false;
+	}
 	if (userdata.length() <= 5) { // A.K.A if there is nothing after the command
 		MessageHandler::numericReply(_clientFd, "461",
 									 _username + " " + "USER" + " :Not enough parameters");
