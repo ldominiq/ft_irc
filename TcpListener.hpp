@@ -71,6 +71,9 @@ private:
 	std::string 						_commands[20];
 	std::map<std::string, Channel *>    _channels;
 	time_t								_creation_time;
+	std::string 						_version;
+	std::string 						_user_modes;
+	std::string 						_channel_modes;
 };
 
 #endif
