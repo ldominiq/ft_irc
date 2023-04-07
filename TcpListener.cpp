@@ -170,18 +170,17 @@ int TcpListener::_read_data(int fd, char *buf, std::string& buffer)
 int TcpListener::_handle_message(int i) {
 	char        buffer[BUF_SIZE];
 	std::string output;
-
-	if (!get_client(_fds[i].fd).is_connected()) {
-		output = recv(_fds[i].fd, buffer, BUF_SIZE, 0);
-		_process_msg(buffer, get_client(_fds[i].fd));
-		return 0;
-	}
+	Client& client = get_client(_fds[i].fd);
 
 	memset(buffer, 0, BUF_SIZE);
 	if (_read_data(_fds[i].fd, buffer, output) == -1)
 		return -1;
 	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
 
+	if (!client.is_registered() && is_irssi_client(output)) {
+		_process_msg(output, client);
+		return 0;
+	}
 	// Wait for client to send data
 	while (!output.empty()) {
 		size_t pos = output.find("\r\n");
@@ -191,7 +190,7 @@ int TcpListener::_handle_message(int i) {
 		}
 		else {
 			// Complete message received, process it
-			_process_msg(output.substr(0, pos), get_client(_fds[i].fd));
+			_process_msg(output.substr(0, pos), client);
 			output = output.substr(pos + 2);
 		}
 	}

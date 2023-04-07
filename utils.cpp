@@ -26,3 +26,13 @@ bool is_valid_nick(const std::string& nickname) {
     }
     return true;
 }
+
+bool	is_irssi_client(const std::string &msg) {
+	if (msg.find("CAP LS") != std::string::npos &&
+		msg.find("NICK") != std::string::npos &&
+		msg.find("USER") != std::string::npos )
+	{
+		return true;
+	}
+	return false;
+}
