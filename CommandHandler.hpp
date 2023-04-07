@@ -17,5 +17,6 @@ void 	_mode(TcpListener &SERV, Client &client, std::vector<std::string> params);
 void	names(Client &client, Channel &channel);
 void	motd(int client_fd, std::string nick);
 void 	oper(TcpListener &SERV, Client &client, std::vector<std::string> params);
+void	topic(TcpListener &SERV, Client &client, std::vector<std::string> params);
 
 #endif
