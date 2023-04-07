@@ -177,11 +177,12 @@ int TcpListener::_handle_message(int i) {
 		return -1;
 	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
 
+	// for registration with irssi, send whole message at once for parsing
 	if (!client.is_registered() && is_irssi_client(output)) {
 		_process_msg(output, client);
 		return 0;
 	}
-	// Wait for client to send data
+	// for everything else, send to buffer to be parsed line by line
 	while (!output.empty()) {
 		size_t pos = output.find("\r\n");
 		if (pos == std::string::npos) { // incomplete msg, keep reading or return on error
