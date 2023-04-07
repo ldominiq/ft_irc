@@ -78,3 +78,15 @@ void Channel::remove_user(int fd)
 		}
 	}
 }
+
+void Channel::set_topic(const std::string& topic) {
+	_topic = topic;
+}
+
+void Channel::set_topic_user(const std::string &user) {
+	_topic_user = user;
+}
+
+void Channel::set_topic_time(const std::string &time) {
+	_topic_time = time;
+}

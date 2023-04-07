@@ -280,22 +280,23 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[10] = {
+	std::string valid_commands[11] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
 			"MODE",
 			"NICK",
 			"USER",
-      "motd",
+      		"motd",
 			"OPER",
 			"PART",
-			"QUIT"
+			"QUIT",
+			"TOPIC"
 	};
 
 	int idx = 0;
 
-	while (idx < 10) {
+	while (idx < 11) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -311,6 +312,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 8: oper(*this, client, params); break;
 		case 9: _part_channel(client, params[0]); break;
 		case 10: _disconnect_client(client); break;
+		case 11: topic(*this, client, params); break;
 	}
 }
 

@@ -51,8 +51,10 @@ void join(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 				if ((*u_it)->get_nick() != client.get_nick())
 					MessageHandler::HandleMessage((*u_it)->get_fd(), msg);
 			}
-			if (!channel->get_topic().empty())
+			if (!channel->get_topic().empty()) {
 				MessageHandler::HandleMessage(client.get_fd(), RPL_TOPIC(client.get_nick(), channel_name, channel->get_topic()));
+				MessageHandler::HandleMessage(client.get_fd(), RPL_TOPICWHOTIME(client.get_nick(), channel_name, channel->get_topic_user(), channel->get_topic_time()));
+			}
 			names(client, *channel);
 		}
 	}
