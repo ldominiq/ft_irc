@@ -22,28 +22,34 @@ Channel& Channel::operator=(const Channel& other) {
 	return *this;
 }
 
-Channel::~Channel() {
+Channel::~Channel() {}
 
-}
-
-bool Channel::send_privmsg(std::string sender, std::vector<std::string> &params)
+bool Channel::send_notice(std::string sender, std::string usern, std::vector<std::string> &params)
 {
 	// reformat message before sending
-	std::string message = ":" + sender + " PRIVMSG "; // + _name + " :" + params[1] + "\r\n";
+	std::string message = prep_message(user_id(sender, usern), "NOTICE", params);
+	std::cout << "notice for chan: " << message << std::endl;
 
-	for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++)
-		message += *it + " ";
-	std::cout << "msg for chan: " << message << std::endl;
 	// send message to all users in channel
-	send_to_users(sender, message, false);
+	send_to_users(sender, message);
 	return false;
 }
 
-void Channel::send_to_users(std::string sender, std::string message, bool self)
+bool Channel::send_privmsg(std::string sender, std::string usern, std::vector<std::string> &params)
+{
+	// reformat message before sending
+	std::string message = prep_message(user_id(sender, usern), "PRIVMSG", params);
+	std::cout << "msg for chan: " << message << std::endl;
+	// send message to all users in channel
+	send_to_users(sender, message);
+	return false;
+}
+
+void Channel::send_to_users(std::string sender, std::string message)
 {
 	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
-		if (!self && (*it)->get_nick() != sender)
+		if ((*it)->get_nick() != sender)
 			MessageHandler::HandleMessage((*it)->get_fd(), message + "\r\n");
 	}
 }

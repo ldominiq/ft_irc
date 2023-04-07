@@ -60,7 +60,7 @@ private:
 	int 			_read_data(int fd, char *buf, std::string& buffer);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
-	void			_handle_privmsg(Client &client, std::vector<std::string> &params);
+	void _handle_msg(Client &client, std::vector<std::string> &params, std::string type);
 	void			_part_channel(Client &client,  std::string chan);
 
     std::string                 		_ipAddress;

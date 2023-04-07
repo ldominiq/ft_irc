@@ -29,8 +29,9 @@ public:
 	bool					is_user_in_channel(int fd);
 	void					remove_user(int fd);
 	void					add_operator(std::string nick);
-	bool					send_privmsg(std::string sender, std::vector<std::string> &params);
-	void					send_to_users(std::string sender, std::string message, bool self);
+	bool send_notice(std::string sender, std::string usern, std::vector<std::string> &params);
+	bool send_privmsg(std::string sender, std::string usern, std::vector<std::string> &params);
+	void send_to_users(std::string sender, std::string message);
 private:
     std::string _name;
     std::string _topic;

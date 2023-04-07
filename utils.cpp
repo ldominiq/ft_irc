@@ -36,3 +36,11 @@ bool	is_irssi_client(const std::string &msg) {
 	}
 	return false;
 }
+
+std::string	prep_message(std::string sender, std::string type, std::vector<std::string> &msg)
+{
+	std::string message = ":" + sender + " " + type + " ";
+	for (std::vector<std::string>::iterator it = msg.begin(); it != msg.end(); it++)
+		message += *it + " ";
+	return message;
+}
