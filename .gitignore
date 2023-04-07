@@ -1,0 +1,9 @@
+
+.idea/
+
+*.o
+commands/*.o
+
+cmake-build-debug/
+
+ircserv
