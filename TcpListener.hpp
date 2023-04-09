@@ -57,6 +57,7 @@ private:
 	void			_registration(std::string msg, Client &client);
 	void			_connection(Client &client);
 	int 			_handle_new_connection(int listening_fd);
+	int 			_read_data(int fd, char *buf, std::string& buffer);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
 	void			_handle_privmsg(Client &client, std::vector<std::string> &params);

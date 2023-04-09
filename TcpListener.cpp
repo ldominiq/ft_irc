@@ -152,35 +152,52 @@ int TcpListener::_handle_new_connection(int listening_fd) {
 	return 0;
 }
 
+int TcpListener::_read_data(int fd, char *buf, std::string& buffer)
+{
+	ssize_t bytes_received = recv(fd, buf, BUF_SIZE, 0);
+	if (bytes_received == -1) { // Handle error
+		return -1;
+	}
+	else if (bytes_received == 0) { // Check to see if the connection has been closed by the client
+		_disconnect_client(get_client(fd));
+		return -1;
+	}
+	buf[bytes_received] = '\0';
+	buffer += buf;
+	return 1;
+}
+
 int TcpListener::_handle_message(int i) {
-
-	char    buffer[BUF_SIZE];
-	ssize_t bytes_received;
-
-	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
+	char        buffer[BUF_SIZE];
+	std::string output;
+	Client& client = get_client(_fds[i].fd);
 
 	memset(buffer, 0, BUF_SIZE);
-
-	//Wait for client to send data
-	bytes_received = recv(_fds[i].fd, buffer, BUF_SIZE, 0);
-
-	if (bytes_received == -1) {
-		std::cout << "Connection issue" << std::endl;
+	if (_read_data(_fds[i].fd, buffer, output) == -1)
 		return -1;
-	}
+	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
 
-	// Check to see if the connection has been closed by the client
-	if (bytes_received == 0) {
-		_disconnect_client(get_client(_fds[i].fd));
-		return -1;
+	// for registration with irssi, send whole message at once for parsing
+	if (!client.is_registered() && is_irssi_client(output)) {
+		_process_msg(output, client);
+		return 0;
 	}
-	std::cout << bytes_received << " bytes received." << std::endl;
-	std::cout << "Message received: " << std::endl
-			  << buffer << std::endl;
-	_process_msg(buffer, get_client(_fds[i].fd));
-
+	// for everything else, send to buffer to be parsed line by line
+	while (!output.empty()) {
+		size_t pos = output.find("\r\n");
+		if (pos == std::string::npos) { // incomplete msg, keep reading or return on error
+			if (_read_data(_fds[i].fd, buffer, output) == -1)
+				return -1;
+		}
+		else {
+			// Complete message received, process it
+			_process_msg(output.substr(0, pos), client);
+			output = output.substr(pos + 2);
+		}
+	}
 	return 0;
 }
+
 
 void TcpListener::_WaitForConnection(int listening_fd) {
     bool    end_server = false;
@@ -316,7 +333,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	}
 }
 
-void TcpListener::_process_msg(const std::string& msg, Client	&client)
+void TcpListener::_process_msg(const std::string& msg, Client &client)
 {
 	if (!client.is_registered()) // connection procedure
 		_registration(msg, client);
@@ -376,11 +393,13 @@ Client& TcpListener::get_client(int client_fd) {
     std::list<Client*>::iterator it;
 
     for (it = this->_clients.begin(); it != this->_clients.end(); it++) {
-        if ((*it)->get_fd() == client_fd)
+        if (client_fd == (*it)->get_fd())
             return **it;
     }
 
-    throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
+	//throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
+	std::cout << "Client not found" << std::endl;
+	_exit(42);
 }
 
 Client &TcpListener::get_client(std::string &nick)
