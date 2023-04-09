@@ -333,7 +333,6 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 10: _part_channel(client, params[0]); break;
 		case 11: _disconnect_client(client); break;
 		case 12: topic(*this, client, params); break;
-	}
 }
 
 
