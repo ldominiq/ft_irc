@@ -15,11 +15,14 @@ void MessageHandler::numericReply(int client_fd, const std::string& numeric, con
 
 void MessageHandler::send_to_client(std::string sender, std::string type, std::vector<std::string> &params, TcpListener *SERV)
 {
+	// prep message
 	std::string message = prep_message(sender, type, params) + "\r\n";
 	std::cout << "message: " << message << std::endl;
 
+	// find client (we need his fd, but only have his name
 	Client&	client = SERV->get_client(params[0]);
 	std::cout << client.get_fd() << std::endl;
-	// SEND REFORMATED MESSAGE TO CLIENT
+
+	//send to client
 	MessageHandler::HandleMessage(client.get_fd(), message);
 }

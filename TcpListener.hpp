@@ -21,6 +21,8 @@
 #include "Client.hpp"
 
 #define BUF_SIZE 1024
+#define PRIVMSG 0
+#define NOTICE 1
 
 class Client;
 class Channel;
@@ -60,7 +62,7 @@ private:
 	int 			_read_data(int fd, char *buf, std::string& buffer);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
-	void _handle_msg(Client &client, std::vector<std::string> &params, std::string type);
+	void _handle_msg(Client &client, std::string type, std::vector<std::string> &params);
 	void			_part_channel(Client &client,  std::string chan);
 
     std::string                 		_ipAddress;
