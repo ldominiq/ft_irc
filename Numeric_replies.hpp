@@ -16,6 +16,8 @@
 #define RPL_ENDOFMOTD(nick) (":localhost 376 " + nick + " :End of /MOTD command.\r\n")
 
 #define RPL_TOPIC(nick, channel, topic) (":localhost 332 " + nick + " " + channel + " :" + topic + "\r\n")
+#define RPL_NOTOPIC(nick, channel) (":localhost 331 " + nick + " " + channel + " :No topic is set\r\n")
+#define RPL_TOPICWHOTIME(nick, channel, client, setat) (":localhost 333 " + nick + " " + channel + " " + client + " :" + setat + "\r\n")
 #define RPL_NAMREPLY(nick, channel, users) (":localhost 353 " + nick + " = " + channel + " :" + users + "\r\n")
 #define RPL_ENDOFNAMES(nick, channel) (":localhost 366 " + nick + " " + channel + " :End of /NAMES list" + "\r\n")
 
@@ -30,5 +32,6 @@
 #define ERR_NOSUCHCHANNEL(user_id, target) (":localhost 403 " + user_id + " " + target + " :No such channel\r\n")
 #define ERR_USERSDONTMATCH(user_id) (":localhost 502 " + user_id + " :Cant change mode for other users\r\n")
 #define ERR_NOPRIVILEGES(user_id) (":localhost 481 " + user_id + " :Permission Denied- You're not an IRC operator\r\n")
+#define ERR_NOTONCHANNEL(user_id, channel) (":localhost 442 " + user_id + " " + channel + " :You're not on that channel\r\n")
 
 #endif //FT_IRC_NUMERIC_REPLIES_HPP
