@@ -44,12 +44,9 @@ void Channel::add_operator(std::string nick) {
 bool Channel::is_user_in_channel(int fd)
 {
 	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); ++it) {
-		if ((*it)->get_fd() == fd) {
-			std::cout << "user found" << std::endl;
+		if ((*it)->get_fd() == fd)
 			return true;
-		}
 	}
-	std::cout << "user NOT found" << std::endl;
 	return false;
 }
 
@@ -57,7 +54,6 @@ void Channel::remove_user(int fd)
 {
 	for (std::vector<Client*>::iterator it = _users.begin(); it != _users.end(); it++) {
 		if ((*it)->get_fd() == fd) {
-			std::cout << "removing user " << (*it)->get_nick() << std::endl;
 			_users.erase(it);
 			return ;
 		}

@@ -20,14 +20,11 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
     std::size_t end = nick.find_first_of("\r\n", 5);
     if (end == std::string::npos) {
         // Handle the case where the string doesn't contain a newline or carriage return
-        std::cout << "Invalid input string" << std::endl;
         return false;
     }
 
     std::string trimmed_nick = nick.substr(5, end - 5);
-	std::cout << "trimmed nick: " << trimmed_nick << std::endl;
     if (!is_valid_nick(trimmed_nick)) {
-        std::cout << "Not a valid nickname" << std::endl;
         MessageHandler::numericReply(_clientFd, "432", trimmed_nick + " :Erroneous nickname");
         return false;
     }
@@ -38,7 +35,6 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
 			nick_msg = ":" + user_id(_nickname, _username) + " NICK :" + trimmed_nick + "\r\n"; }
         this->_nickname = trimmed_nick;
 		if (nick_msg.length() > 0) {
-			std::cout << "nick_msg: " << nick_msg << std::endl;
 			MessageHandler::HandleMessage(_clientFd, nick_msg); }
         return true;
     } else {
@@ -62,7 +58,6 @@ void Client::set_connected() {
 
 static bool is_valid_username(std::string u) {
 	// check length
-	std::cout << "is_valid " << u << std::endl;
 	if (u.length() < 1 || u.length() > 9) {
 		return false;
 	}
@@ -96,7 +91,6 @@ bool Client::set_userdata(const std::string &userdata)
 		_username = _nickname; } // nickname is a fallback value for username when incorrect
 	else {
 		_username = u;
-		std::cout << _username << std::endl;
 	}
 	splitout >> u; splitout >> u;
 	if (!u.empty())
@@ -109,7 +103,7 @@ void Client::get_infos() {
 	std::cout << "fd: " << this->get_fd() << std::endl;
 	std::cout << "nick: " << this->get_nick() << std::endl;
 	std::cout << "user: " << this->get_username() << std::endl;
-	std::cout << "hostname" << this->get_hostname() << std::endl;
+	std::cout << "hostname: " << this->get_hostname() << std::endl;
 	std::cout << "registered: " << this->is_registered() << std::endl;
 	std::cout << "connected: " << this->is_connected() << std::endl;
 }
@@ -130,7 +124,6 @@ bool Client::in_channel(const std::string& channel_name) {
 
 void Client::leave_channel(Channel& channel)
 {
-	std::cout << "channel: " << channel.get_name() << " - user: " << this->get_nick() << " is leaving" << std::endl;
 	channel.remove_user(this->get_fd());
 	_channels.erase(channel.get_name());
 	MessageHandler::HandleMessage(this->get_fd(), ":" + user_id(_nickname, _username) + " PART :" + channel.get_name() + "\r\n");

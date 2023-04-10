@@ -38,10 +38,6 @@ public:
     // Main processing loop
     void Run();
 
-	template<typename T>
-	void	print_debug(T message) {
-		std::cout << "===DEBUG===: " << message << std::endl;
-	}
 	void			delete_client(int	client_fd);
 	Client&			get_client(int client_fd);
 	Client&			get_client(std::string	&nick);

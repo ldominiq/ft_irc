@@ -44,7 +44,6 @@ void	topic(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 	size_t pos = new_topic.find(delimiter);
 	std::string result = new_topic.substr(pos + 1);
 
-	std::cout << "TOPIC: " << result << std::endl;
 	channel->set_topic(result);
 	channel->set_topic_user(client.get_nick());
 

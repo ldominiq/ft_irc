@@ -28,7 +28,6 @@ void TcpListener::Run() {
 
         _WaitForConnection(listening_fd);
     }
-    std::cout << "Goodbye..." << std::endl;
 }
 
 int TcpListener::_CreateSocket() const {
@@ -59,8 +58,6 @@ int TcpListener::_CreateSocket() const {
     if (fcntl(listening_fd, F_SETFL, O_NONBLOCK))
         _handle_error("fcntl() failed.");
 
-    std::cout << "Server Socket connection created..." << std::endl;
-
     /*************************************************************/
     /* Bind the socket                                           */
     /*************************************************************/
@@ -80,9 +77,6 @@ int TcpListener::_CreateSocket() const {
         return -1;
     }
 
-    //std::cout << blue << "| listen() is OK ! |" << def << std::endl;
-    std::cout << "Looking for clients..." << std::endl;
-
     return listening_fd;
 }
 
@@ -91,7 +85,6 @@ void TcpListener::_disconnect_client(Client &client, std::string msg)
 	// send ERROR message to client
 	MessageHandler::HandleMessage(client.get_fd(), "ERROR :Closing link: " + msg + "\r\n");
 
-	std::cout << "Client disconnected" << std::endl;
 	close(client.get_fd());
 	for (int i=0; i < _nfds; i++) {
 		if (_fds[i].fd == client.get_fd()) {
@@ -117,8 +110,6 @@ void TcpListener::_disconnect_client(Client &client, std::string msg)
 			}}
 		if (_channels.begin() == _channels.end())
 			break;
-		else
-			print_channels();
 		if (!erased)
 			it++;
 	}
@@ -132,8 +123,6 @@ int TcpListener::_handle_new_connection(int listening_fd) {
 	int                 client_fd = -1;
 
 	client_addr_size = sizeof(client_addr);
-
-	print_debug("Listening socket is readable");
 
 	client_fd = accept(listening_fd, (struct sockaddr*)&client_addr, &client_addr_size);
 	if (client_fd < 0) {
@@ -176,7 +165,6 @@ int TcpListener::_handle_message(int i) {
 	memset(buffer, 0, BUF_SIZE);
 	if (_read_data(_fds[i].fd, buffer, output) == -1)
 		return -1;
-	std::cout << "Descriptor: " << _fds[i].fd << " is readable" << std::endl;
 
 	// for registration with irssi, send whole message at once for parsing
 	if (!client.is_registered() && is_irssi_client(output)) {
@@ -214,7 +202,6 @@ void TcpListener::_WaitForConnection(int listening_fd) {
     /* Loop waiting for incoming connects or for incoming data   */
     /* on any of the connected sockets.                          */
     do {
-		print_debug("Waiting on poll()...");
         if (poll(_fds, _nfds, -1) < 0)
             _handle_error("poll() failed");
 
@@ -246,7 +233,6 @@ void TcpListener::_registration(std::string msg, Client &client) {
 		_skip_line(msg); }
 	if (msg.find("PASS") == 0)
 	{
-		std::cout << msg.substr(5, 12) << std::endl;
 		if (msg.substr(5, _password.length()) != _password) {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
 			_disconnect_client(client, "Client disconnected");
@@ -269,7 +255,6 @@ void TcpListener::_registration(std::string msg, Client &client) {
 			return ;
 		_skip_line(msg);
 	}
-	client.get_infos();
 
 	client.set_registered();
 }
@@ -353,6 +338,7 @@ void TcpListener::_process_msg(const std::string& msg, Client &client) {
 		for (std::string param; iss >> param;)
 			params.push_back(param);
 
+		std::cout << "[CLIENT " << client.get_fd() << ": " + client.get_nick() + "] " + msg << std::endl;
 		_exec_command(client, cmd, params);
 	}
 }
@@ -400,9 +386,6 @@ Client& TcpListener::get_client(int client_fd) {
         if (client_fd == (*it)->get_fd())
             return **it;
     }
-
-	//throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
-	std::cout << "Client not found" << std::endl;
 	_exit(42);
 }
 
@@ -465,7 +448,6 @@ void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
 
 	if (channel) {
 		client.leave_channel(*channel);
-//		print_channels();
 		if (channel->get_users().size() == 0) { // if last, delete channel
 			this->_channels.erase(chan); }
 		else { // send part to every user in channel
@@ -478,5 +460,5 @@ void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
 		}
 	}
 	else
-		std::cout << "no channel found" << std::endl;
+		MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHCHANNEL(user_id(client.get_nick(), client.get_username()), chan));
 }
