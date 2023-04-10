@@ -52,6 +52,6 @@ void	topic(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 	std::string timestamp_str = std::to_string(timestamp);
 	channel->set_topic_time(timestamp_str);
 
-	channel->send_to_users(client.get_nick(), ":" + user_id + " TOPIC " + channel->get_name() + " :" + result, false);
+	channel->send_to_users(client.get_nick(), ":" + user_id + " TOPIC " + channel->get_name() + " :" + result);
 	MessageHandler::HandleMessage(client.get_fd(), ":" + user_id + " TOPIC " + channel->get_name() + " :" + result + "\r\n");
 }
