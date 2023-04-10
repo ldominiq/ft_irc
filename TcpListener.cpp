@@ -452,7 +452,9 @@ void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
 	if (channel) {
 		client.leave_channel(*channel);
 		if (channel->get_users().size() == 0) { // if last, delete channel
-			this->_channels.erase(chan); }
+			delete channel;
+			this->_channels.erase(chan);
+		}
 		else { // send part to every user in channel
 			std::vector<Client *> users = channel->get_users();
 			for (std::vector<Client *>::iterator u_it = users.begin(); u_it != users.end(); u_it++)
