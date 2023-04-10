@@ -30,7 +30,6 @@ add_executable(ft_irc
         commands/motd.cpp
         commands/oper.cpp
         commands/mode.cpp
-        commands/topic.cpp
-        commands/kill.cpp)
+        commands/topic.cpp)
 
 add_definitions(-DCATCH_CONFIG_MAIN)
