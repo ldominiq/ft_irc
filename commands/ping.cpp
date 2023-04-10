@@ -6,8 +6,7 @@
 #include "../MessageHandler.hpp"
 
 
-void ping(int client_fd) {
-	MessageHandler::HandleMessage(client_fd,
-								  ":localhost PONG localhost :sbars\r\n");
-	std::cout << "PONG" << std::endl;
+void ping(Client &client) {
+	MessageHandler::HandleMessage(client.get_fd(),
+								  ":localhost PONG localhost :localhost\r\n");
 }

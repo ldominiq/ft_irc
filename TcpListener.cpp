@@ -322,7 +322,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	}
 	switch (idx + 1) {
 		case 1: join(*this, client, params); break;
-		case 2: ping(client.get_fd()); break;
+		case 2: ping(client); break;
 		case 3: _handle_msg(client, "PRIVMSG", params); break;
 		case 4: _handle_msg(client, "NOTICE", params); break;
 		case 5: _mode(*this, client, params); break;
