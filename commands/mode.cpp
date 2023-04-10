@@ -45,7 +45,28 @@ void _mode(TcpListener &SERV, Client &client, std::vector<std::string> params)
 		}
 	}
 
-	// Construct and send response message
-	std::string response = ":" + user_id + " MODE " + target + " :" + mode_changes + "\r\n";
-	MessageHandler::HandleMessage(client.get_fd(), response);
+	std::string modes_supported;
+	std::string modes_not_supported;
+	std::string user_modes = SERV.get_user_modes();
+
+	char mode_sign = mode_changes[0];
+	if (mode_sign == '+' || mode_sign == '-') {
+		modes_supported = mode_sign;
+		for (std::string::size_type i = 1; i < mode_changes.length(); ++i) {
+			char c = mode_changes[i];
+			if (user_modes.find(c) != std::string::npos) {
+				modes_supported += c;
+			} else {
+				modes_not_supported += c;
+			}
+		}
+
+		// Construct and send response message
+		if (!modes_supported.empty() && modes_supported.size() != 1) {
+			std::string response = ":" + user_id + " MODE " + target + " :" + modes_supported + "\r\n";
+			MessageHandler::HandleMessage(client.get_fd(), response);
+		}
+		if (!modes_not_supported.empty())
+			MessageHandler::HandleMessage(client.get_fd(), ERR_UMODEUNKNOWNFLAG(user_id, modes_not_supported));
+	}
 }
