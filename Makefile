@@ -53,6 +53,7 @@ clean:
 
 fclean:		clean
 			@ ${RM} ${NAME}
+			${RM} *.log
 			@ echo "$(RED)Deleting $(CYAN)$(NAME) $(CLR_RMV)binary ✔️"
 
 re:			fclean all

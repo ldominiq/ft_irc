@@ -22,28 +22,13 @@ Channel& Channel::operator=(const Channel& other) {
 	return *this;
 }
 
-Channel::~Channel() {
+Channel::~Channel() {}
 
-}
-
-bool Channel::send_privmsg(std::string sender, std::vector<std::string> &params)
-{
-	// reformat message before sending
-	std::string message = ":" + sender + " PRIVMSG "; // + _name + " :" + params[1] + "\r\n";
-
-	for (std::vector<std::string>::iterator it = params.begin(); it != params.end(); it++)
-		message += *it + " ";
-	std::cout << "msg for chan: " << message << std::endl;
-	// send message to all users in channel
-	send_to_users(sender, message, false);
-	return false;
-}
-
-void Channel::send_to_users(std::string sender, std::string message, bool self)
+void Channel::send_to_users(std::string sender, std::string message)
 {
 	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
 	{
-		if (!self && (*it)->get_nick() != sender)
+		if ((*it)->get_nick() != sender)
 			MessageHandler::HandleMessage((*it)->get_fd(), message + "\r\n");
 	}
 }
