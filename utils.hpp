@@ -6,6 +6,7 @@
 #define FT_IRC_UTILS_HPP
 
 #include <string>
+#include <vector>
 
 void		_skip_line(std::string &msg);
 bool		is_valid_nick(const std::string& nickname);
