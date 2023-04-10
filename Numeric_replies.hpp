@@ -33,5 +33,6 @@
 #define ERR_USERSDONTMATCH(user_id) (":localhost 502 " + user_id + " :Cant change mode for other users\r\n")
 #define ERR_NOPRIVILEGES(user_id) (":localhost 481 " + user_id + " :Permission Denied- You're not an IRC operator\r\n")
 #define ERR_NOTONCHANNEL(user_id, channel) (":localhost 442 " + user_id + " " + channel + " :You're not on that channel\r\n")
+#define ERR_UMODEUNKNOWNFLAG(user_id, mode) (":localhost 501 " + user_id + " :Unknown MODE flag - " + mode + "\r\n")
 
 #endif //FT_IRC_NUMERIC_REPLIES_HPP

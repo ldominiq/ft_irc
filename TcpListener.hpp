@@ -41,6 +41,7 @@ public:
 	void			delete_client(int	client_fd);
 	Client&			get_client(int client_fd);
 	Client&			get_client(std::string	&nick);
+	std::string 	get_user_modes() { return _user_modes; }
 	bool 			_nickname_available(std::string &nick);
 	std::map<std::string, Channel *>& get_channels() { return _channels; }
 	void 			add_channel(Channel *channel);
