@@ -101,6 +101,7 @@ void TcpListener::_disconnect_client(Client &client, std::string msg)
 		if (chan->is_user_in_channel(client.get_fd())) {
 			client.leave_channel(*chan);
 			if (chan->get_users().empty()) { // if last, delete channel
+				delete chan;
 				it = _channels.erase(it); // set iterator to next channel
 				erased = true;
 			}
@@ -326,7 +327,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 void TcpListener::_process_msg(const std::string& msg, Client &client) {
 	if (!client.is_registered()) // connection procedure
 		_registration(msg, client);
-	if (!client.is_connected())
+	if (client.is_registered() && !client.is_connected())
 		_connection(client);
 	else // all commands after registration
 	{
@@ -374,8 +375,10 @@ void TcpListener::delete_client(int client_fd) {
     std::list<Client *>::iterator it;
 
 	for (it = this->_clients.begin(); it != this->_clients.end(); it++){
-		if (((*it)->get_fd() == client_fd))
+		if (((*it)->get_fd() == client_fd)) {
+			delete (*it);
 			this->_clients.erase(it);
+		}
 	}
 }
 
