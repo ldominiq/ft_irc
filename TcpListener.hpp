@@ -50,7 +50,7 @@ public:
 	void 			add_channel(Channel *channel);
 	void 			print_channels();
 	Channel*		_is_channel(std::basic_string<char> chan_name);
-	void			_disconnect_client(Client &client);
+	void			_disconnect_client(Client &client, std::string msg);
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);

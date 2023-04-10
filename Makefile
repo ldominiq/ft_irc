@@ -24,6 +24,7 @@ SRCS        :=  Channel.cpp \
                 commands/oper.cpp \
                 commands/mode.cpp \
                 commands/topic.cpp \
+                commands/kill.cpp \
 
 OBJS        := ${SRCS:.cpp=.o}
 
