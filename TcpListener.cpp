@@ -427,7 +427,7 @@ void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &para
 	else if (!_nickname_available(params[0]))
 		MessageHandler::send_to_client(client.get_nick(), params, this);
 	else {
-		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
+		MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHNICK(user_id(client.get_nick(), client.get_username()), params[0]));}
 }
 
 void TcpListener::add_channel(Channel *channel) {
