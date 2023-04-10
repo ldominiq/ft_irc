@@ -14,17 +14,28 @@ void _skip_line(std::string &msg)
 	}
 }
 
-#include <regex>
-
 bool is_valid_nick(const std::string& nickname) {
-    // The nickname must start with a letter (a-z or A-Z) or one of the allowed special characters (| or [).
-    // The nickname can be followed by any combination of letters, digits, and allowed special characters.
-    // The nickname must be between 1 and 9 characters in length.
-	// todo: use cpp98 function
-	if (!std::regex_match(nickname, std::regex("^[a-zA-Z|[]([a-zA-Z0-9|\\[\\]\\`_^{}\\-]{0,8})?$"))) {
-        return false;
-    }
-    return true;
+	const std::string valid_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ|[]0123456789`_^{}-";
+	const std::string allowed_special_chars = "|[";
+
+	// The nickname must be between 1 and 9 characters in length.
+	if (nickname.length() < 1 || nickname.length() > 9) {
+		return false;
+	}
+
+	// The nickname must start with a letter (a-z or A-Z) or one of the allowed special characters (| or [).
+	if (valid_chars.find_first_of(nickname[0]) == std::string::npos &&
+		allowed_special_chars.find_first_of(nickname[0]) == std::string::npos) {
+		return false;
+	}
+
+	// The nickname can be followed by any combination of letters, digits, and allowed special characters.
+	const std::string nickname_chars = nickname.substr(1);
+	if (nickname_chars.find_first_not_of(valid_chars) != std::string::npos) {
+		return false;
+	}
+
+	return true;
 }
 
 bool	is_irssi_client(const std::string &msg) {
