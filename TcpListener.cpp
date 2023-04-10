@@ -296,8 +296,7 @@ void TcpListener::_connection(Client &client) {
 	client.set_connected();
 }
 
-void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
-{
+void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params) {
 	std::string valid_commands[13] = {
 			"JOIN",
 			"PING",
@@ -332,14 +331,14 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 8: motd(client.get_fd(), client.get_nick()); break;
 		case 9: oper(*this, client, params); break;
 		case 10: _part_channel(client, params[0]); break;
-		case 11: _disconnect_client(client); break;
+		case 11: _disconnect_client(client, "Client Disconnected"); break;
 		case 12: topic(*this, client, params); break;
-    case 13: kill(*this, client, params); break;
+    	case 13: kill(*this, client, params); break;
+	}
 }
 
 
-void TcpListener::_process_msg(const std::string& msg, Client &client)
-{
+void TcpListener::_process_msg(const std::string& msg, Client &client) {
 	if (!client.is_registered()) // connection procedure
 		_registration(msg, client);
 	if (!client.is_connected())
