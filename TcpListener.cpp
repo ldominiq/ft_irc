@@ -86,10 +86,10 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
-void TcpListener::_disconnect_client(Client &client)
+void TcpListener::_disconnect_client(Client &client, std::string msg)
 {
 	// send ERROR message to client
-	MessageHandler::HandleMessage(client.get_fd(), "ERROR :Closing link: Client disconnected\r\n");
+	MessageHandler::HandleMessage(client.get_fd(), "ERROR :Closing link: " + msg + "\r\n");
 
 	std::cout << "Client disconnected" << std::endl;
 	close(client.get_fd());
@@ -112,7 +112,7 @@ void TcpListener::_disconnect_client(Client &client)
 				erased = true;
 			}
 			else { // send quit to remaining channel users
-				chan->send_to_users(client.get_nick(), ":" + user_id(client.get_nick(), client.get_username()) +" QUIT :Quit: Leaving", false);
+				chan->send_to_users(client.get_nick(), ":" + user_id(client.get_nick(), client.get_username()) +" QUIT :Quit: " + msg, false);
 			}}
 		if (_channels.begin() == _channels.end())
 			break;
@@ -159,7 +159,7 @@ int TcpListener::_read_data(int fd, char *buf, std::string& buffer)
 		return -1;
 	}
 	else if (bytes_received == 0) { // Check to see if the connection has been closed by the client
-		_disconnect_client(get_client(fd));
+		_disconnect_client(get_client(fd), "Client disconnected");
 		return -1;
 	}
 	buf[bytes_received] = '\0';
@@ -248,14 +248,14 @@ void TcpListener::_registration(std::string msg, Client &client) {
 		std::cout << msg.substr(5, 12) << std::endl;
 		if (msg.substr(5, _password.length()) != _password) {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
-			_disconnect_client(client);
+			_disconnect_client(client, "Client disconnected");
 			return;
 		}
 		_skip_line(msg);
 	}
 	else {
 		MessageHandler::numericReply(client.get_fd(), "461", " :Password required");
-		_disconnect_client(client);
+		_disconnect_client(client, "Client disconnected");
 		return;
 	}
 	if (msg.find("NICK") == 0){
@@ -297,7 +297,7 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[11] = {
+	std::string valid_commands[12] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
@@ -308,12 +308,13 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 			"OPER",
 			"PART",
 			"QUIT",
-			"TOPIC"
+			"TOPIC",
+			"kill"
 	};
 
 	int idx = 0;
 
-	while (idx < 11) {
+	while (idx < 12) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -328,8 +329,9 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 7: motd(client.get_fd(), client.get_nick()); break;
 		case 8: oper(*this, client, params); break;
 		case 9: _part_channel(client, params[0]); break;
-		case 10: _disconnect_client(client); break;
+		case 10: _disconnect_client(client, "Client disconnected"); break;
 		case 11: topic(*this, client, params); break;
+		case 12: kill(*this, client, params); break;
 	}
 }
 
