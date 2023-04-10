@@ -342,7 +342,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 void TcpListener::_process_msg(const std::string& msg, Client &client) {
 	if (!client.is_registered()) // connection procedure
 		_registration(msg, client);
-	if (!client.is_connected())
+	if (client.is_registered() && !client.is_connected())
 		_connection(client);
 	else // all commands after registration
 	{
