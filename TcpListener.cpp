@@ -112,7 +112,8 @@ void TcpListener::_disconnect_client(Client &client, std::string msg)
 				erased = true;
 			}
 			else { // send quit to remaining channel users
-				chan->send_to_users(client.get_nick(), ":" + user_id(client.get_nick(), client.get_username()) +" QUIT :Quit: " + msg, false);
+				chan->send_to_users(client.get_nick(),
+                  ":" + user_id(client.get_nick(), client.get_username()) +" QUIT :Quit: " + msg);
 			}}
 		if (_channels.begin() == _channels.end())
 			break;
@@ -297,14 +298,15 @@ void TcpListener::_connection(Client &client) {
 
 void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params)
 {
-	std::string valid_commands[12] = {
+	std::string valid_commands[13] = {
 			"JOIN",
 			"PING",
 			"PRIVMSG",
+			"NOTICE",
 			"MODE",
 			"NICK",
 			"USER",
-      		"motd",
+			"motd",
 			"OPER",
 			"PART",
 			"QUIT",
@@ -314,7 +316,7 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 
 	int idx = 0;
 
-	while (idx < 12) {
+	while (idx < 13) {
 		if (cmd == valid_commands[idx])
 			break;
 		idx++;
@@ -322,18 +324,19 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 	switch (idx + 1) {
 		case 1: join(*this, client, params); break;
 		case 2: ping(client.get_fd()); break;
-		case 3: _handle_privmsg(client, params); break;
-		case 4: _mode(*this, client, params); break;
-		case 5: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
-		case 6: client.set_userdata("error"); break;
-		case 7: motd(client.get_fd(), client.get_nick()); break;
-		case 8: oper(*this, client, params); break;
-		case 9: _part_channel(client, params[0]); break;
-		case 10: _disconnect_client(client, "Client disconnected"); break;
-		case 11: topic(*this, client, params); break;
-		case 12: kill(*this, client, params); break;
-	}
+		case 3: _handle_msg(client, "PRIVMSG", params); break;
+		case 4: _handle_msg(client, "NOTICE", params); break;
+		case 5: _mode(*this, client, params); break;
+		case 6: client.set_nickname("NICK " + params[0] + "\r\n", *this); break;
+		case 7: client.set_userdata("error"); break;
+		case 8: motd(client.get_fd(), client.get_nick()); break;
+		case 9: oper(*this, client, params); break;
+		case 10: _part_channel(client, params[0]); break;
+		case 11: _disconnect_client(client); break;
+		case 12: topic(*this, client, params); break;
+    case 13: kill(*this, client, params); break;
 }
+
 
 void TcpListener::_process_msg(const std::string& msg, Client &client)
 {
@@ -415,23 +418,26 @@ Client &TcpListener::get_client(std::string &nick)
 	throw std::runtime_error("Client not found"); // or return some default value instead of throwing an exception
 }
 
-void TcpListener::_handle_privmsg(Client &client, std::vector<std::string> &params)
-{
+void TcpListener::_handle_msg(Client &client, std::string type, std::vector<std::string> &params) {
+	// CHECK VALIDITY
 	if (params.size() < 1) {
-		MessageHandler::numericReply(client.get_fd(), "411", ":No recipient given (PRIVMSG)");
+		if (type == "PRIVMSG") // error messages for PRIVMSG
+			MessageHandler::numericReply(client.get_fd(), "411", ":No recipient given (PRIVMSG)");
 		return; }
 	else if (params.size() < 2) {
-		MessageHandler::numericReply(client.get_fd(), "412", ":No text to send");
+		if (type == "PRIVMSG")
+			MessageHandler::numericReply(client.get_fd(), "412", ":No text to send");
 		return; }
 
 	Channel *chan = _is_channel(params[0]);
-	if (chan){
-		chan->send_privmsg(client.get_nick(), params);
-	}
-	else if (!_nickname_available(params[0]))
-		MessageHandler::send_to_client(client.get_nick(), params, this);
-	else {
-		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");}
+
+	// REDIRECT MESSAGE DEPENDING ON CONTEXT
+	if (chan) // if dest is a channel
+		chan->send_to_users(client.get_nick(), prep_message(user_id(client.get_nick(), client.get_username()), type, params));
+	else if (!_nickname_available(params[0])) // if dest is a user
+		MessageHandler::send_to_client(user_id(client.get_nick(), client.get_username()), type, params, this);
+	else if (type == "PRIVMSG") // if target is unknown && it's privmsg, send back error
+		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");
 }
 
 void TcpListener::add_channel(Channel *channel) {

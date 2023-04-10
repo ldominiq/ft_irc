@@ -15,9 +15,9 @@ class Client;
 
 class Channel {
 public:
-    Channel(std::string name, std::string op);
+	Channel(std::string name, std::string op);
 	Channel(const Channel& other);
-    ~Channel();
+	~Channel();
 	Channel& operator=(const Channel& other);
 
 	std::string				get_name() {return _name;};
@@ -31,15 +31,14 @@ public:
 	bool					is_user_in_channel(int fd);
 	void					remove_user(int fd);
 	void					add_operator(std::string nick);
-	bool					send_privmsg(std::string sender, std::vector<std::string> &params);
-	void					send_to_users(std::string sender, std::string message, bool self);
+	void					send_to_users(std::string sender, std::string message);
 	void 					set_topic(const std::string& topic);
 	void 					set_topic_user(const std::string& user);
 	void 					set_topic_time(const std::string& time);
 private:
-    std::string _name;
-    std::string _topic;
-    std::vector<Client *> _users;
+	std::string _name;
+	std::string _topic;
+	std::vector<Client *> _users;
 	std::string _operator;
 	std::string _topic_user;
 	std::string _topic_time;
