@@ -41,9 +41,10 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
         if (_registered) {
             MessageHandler::numericReply(_clientFd, "433", _username + " " + trimmed_nick + " :Nickname is already in use");
         } else {
-			MessageHandler::HandleMessage(_clientFd, trimmed_nick + " " + trimmed_nick + " :Nickname is already in use");
+			MessageHandler::HandleMessage(_clientFd, trimmed_nick + " " + trimmed_nick + " :Nickname is already in use\r\n");
 		}
-		SERV.disconnect_client(*this, "Client disconnected");
+		if (!this->_connected)
+			SERV.disconnect_client(*this, "Client disconnected");
         return false;
     }
 }
