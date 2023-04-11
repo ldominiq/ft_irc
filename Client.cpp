@@ -29,7 +29,7 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
         return false;
     }
 
-    if (SERV._nickname_available(const_cast<std::string &>(trimmed_nick))) {
+    if (SERV.nickname_available(const_cast<std::string &>(trimmed_nick))) {
 		std::string nick_msg = "";
 		if (this->_nickname.length() > 0) {
 			nick_msg = ":" + user_id(_nickname, _username) + " NICK :" + trimmed_nick + "\r\n"; }
@@ -43,7 +43,7 @@ bool Client::set_nickname(const std::string &nick, TcpListener &SERV) {
         } else {
 			MessageHandler::HandleMessage(_clientFd, trimmed_nick + " " + trimmed_nick + " :Nickname is already in use");
 		}
-		SERV._disconnect_client(*this, "Client disconnected");
+		SERV.disconnect_client(*this, "Client disconnected");
         return false;
     }
 }

@@ -11,7 +11,7 @@ void	topic(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 		return;
 	}
 
-	Channel *channel = SERV._is_channel(params[0]);
+	Channel *channel = SERV.is_channel(params[0]);
 	if (!channel) {
 		MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHCHANNEL(user_id, params[0]));
 		return;

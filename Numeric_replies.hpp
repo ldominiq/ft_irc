@@ -6,6 +6,8 @@
 #define FT_IRC_NUMERIC_REPLIES_HPP
 
 #define user_id(nickname, username) (nickname + "!" + username + "@localhost")
+
+// RPL
 #define RPL_WELCOME(nick) (":localhost 001 " + nick + " :Welcome to the COOL IRC Network, " + user_id + "\r\n")
 #define RPL_YOURHOST(nick, version) (":localhost 002 " + nick + " :Your host is localhost, running version " + version + "\r\n")
 #define RPL_CREATED(nick, datetime) (":localhost 003 " + nick + " :This server was created " + datetime + "\r\n")

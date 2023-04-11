@@ -34,12 +34,12 @@ void _mode(TcpListener &SERV, Client &client, std::vector<std::string> params)
 
 	// Check if target exists
 	if (is_channel) {
-		if (SERV._is_channel(target) != NULL) {
+		if (SERV.is_channel(target) != NULL) {
 			MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHCHANNEL(user_id, target));
 			return;
 		}
 	} else {
-		if (SERV._nickname_available(target)) {
+		if (SERV.nickname_available(target)) {
 			MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHNICK(user_id, target));
 			return;
 		}

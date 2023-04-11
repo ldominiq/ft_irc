@@ -37,10 +37,6 @@ void Channel::add_user(Client *client) {
 	this->_users.push_back(client);
 }
 
-void Channel::add_operator(std::string nick) {
-	this->_operator = nick;
-}
-
 bool Channel::is_user_in_channel(int fd)
 {
 	for (std::vector<Client *>::iterator it = _users.begin(); it != _users.end(); ++it) {

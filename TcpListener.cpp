@@ -17,7 +17,7 @@ void TcpListener::Run() {
     int	listening_fd;
 
 	_creation_time = time(nullptr);
-	_version = "DEV.1";
+	_version = "1.0";
 	_user_modes = "io";
 	_channel_modes = "";
 
@@ -80,7 +80,7 @@ int TcpListener::_CreateSocket() const {
     return listening_fd;
 }
 
-void TcpListener::_disconnect_client(Client &client, std::string msg)
+void TcpListener::disconnect_client(Client &client, std::string msg)
 {
 	// send ERROR message to client
 	MessageHandler::HandleMessage(client.get_fd(), "ERROR :Closing link: " + msg + "\r\n");
@@ -150,7 +150,7 @@ int TcpListener::_read_data(int fd, char *buf, std::string& buffer)
 		return -1;
 	}
 	else if (bytes_received == 0) { // Check to see if the connection has been closed by the client
-		_disconnect_client(get_client(fd), "Client disconnected");
+		disconnect_client(get_client(fd), "Client disconnected");
 		return -1;
 	}
 	buf[bytes_received] = '\0';
@@ -231,30 +231,30 @@ void TcpListener::_WaitForConnection(int listening_fd) {
 
 void TcpListener::_registration(std::string msg, Client &client) {
 	if (msg.find("CAP") == 0) {
-		_skip_line(msg); }
+		skip_line(msg); }
 	if (msg.find("PASS") == 0)
 	{
 		if (msg.substr(5, _password.length()) != _password) {
 			MessageHandler::numericReply(client.get_fd(), "464", " :Wrong password");
-			_disconnect_client(client, "Client disconnected");
+			disconnect_client(client, "Client disconnected");
 			return;
 		}
-		_skip_line(msg);
+		skip_line(msg);
 	}
 	else {
 		MessageHandler::numericReply(client.get_fd(), "461", " :Password required");
-		_disconnect_client(client, "Client disconnected");
+		disconnect_client(client, "Client disconnected");
 		return;
 	}
 	if (msg.find("NICK") == 0){
 		if (!client.set_nickname(msg, *this))
 			return ;
-		_skip_line(msg);
+		skip_line(msg);
 	}
 	if (msg.find("USER") == 0) {
 		if (!client.set_userdata(msg))
 			return ;
-		_skip_line(msg);
+		skip_line(msg);
 	}
 
 	client.set_registered();
@@ -317,7 +317,8 @@ void TcpListener::_exec_command(Client &client, const std::string& cmd, std::vec
 		case 8: motd(client.get_fd(), client.get_nick()); break;
 		case 9: oper(*this, client, params); break;
 		case 10: _part_channel(client, params[0]); break;
-		case 11: _disconnect_client(client, "Client Disconnected"); break;
+		case 11:
+			disconnect_client(client, "Client Disconnected"); break;
 		case 12: topic(*this, client, params); break;
     	case 13: kill(*this, client, params); break;
 	}
@@ -349,7 +350,7 @@ void TcpListener::_handle_error(const char *msg) {
     exit(EXIT_FAILURE);
 }
 
-bool TcpListener::_nickname_available(std::string &nick)
+bool TcpListener::nickname_available(std::string &nick)
 {
 	std::list<Client *>::iterator it;
 	for (it = this->_clients.begin(); it != this->_clients.end(); it++){
@@ -359,7 +360,7 @@ bool TcpListener::_nickname_available(std::string &nick)
 	return (true);
 }
 
-Channel * TcpListener::_is_channel(std::basic_string<char> chan_name)
+Channel * TcpListener::is_channel(std::basic_string<char> chan_name)
 {
 	if (chan_name[0] != '&')
 		return nullptr;
@@ -414,12 +415,12 @@ void TcpListener::_handle_msg(Client &client, std::string type, std::vector<std:
 			MessageHandler::numericReply(client.get_fd(), "412", ":No text to send");
 		return; }
 
-	Channel *chan = _is_channel(params[0]);
+	Channel *chan = is_channel(params[0]);
 
 	// REDIRECT MESSAGE DEPENDING ON CONTEXT
 	if (chan) // if dest is a channel
 		chan->send_to_users(client.get_nick(), prep_message(user_id(client.get_nick(), client.get_username()), type, params));
-	else if (!_nickname_available(params[0])) // if dest is a user
+	else if (!nickname_available(params[0])) // if dest is a user
 		MessageHandler::send_to_client(user_id(client.get_nick(), client.get_username()), type, params, this);
 	else if (type == "PRIVMSG") // if target is unknown && it's privmsg, send back error
 		MessageHandler::numericReply(client.get_fd(), "401", params[0] + " :No such nick/channel");
@@ -447,7 +448,7 @@ void TcpListener::print_channels() {
 }
 
 void TcpListener::_part_channel(Client &client, std::basic_string<char> chan) {
-	Channel *channel = _is_channel(chan);
+	Channel *channel = is_channel(chan);
 
 	if (channel) {
 		client.leave_channel(*channel);
