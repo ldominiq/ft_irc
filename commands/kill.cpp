@@ -4,8 +4,6 @@
 
 #include "../CommandHandler.hpp"
 
-//kill test :not talking enough
-
 void	kill(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 	const std::string user_id = user_id(client.get_nick(), client.get_username());
 	if (!client.is_operator()) {
@@ -28,11 +26,11 @@ void	kill(TcpListener &SERV, Client &client, std::vector<std::string> params) {
 
 	std::string kill_msg = "Killed (" + client.get_nick() + " " + reason + ")";
 
-	if (SERV._nickname_available(params[0])) {
+	if (SERV.nickname_available(params[0])) {
 		MessageHandler::HandleMessage(client.get_fd(), ERR_NOSUCHNICK(user_id, params[0]));
 		return;
 	}
 
 	Client &user = SERV.get_client(params[0]);
-	SERV._disconnect_client(user, kill_msg);
+	SERV.disconnect_client(user, kill_msg);
 }

@@ -30,7 +30,6 @@ public:
 	void					add_user(Client *client);
 	bool					is_user_in_channel(int fd);
 	void					remove_user(int fd);
-	void					add_operator(std::string nick);
 	void					send_to_users(std::string sender, std::string message);
 	void 					set_topic(const std::string& topic);
 	void 					set_topic_user(const std::string& user);

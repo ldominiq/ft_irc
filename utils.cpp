@@ -4,7 +4,7 @@
 
 #include "utils.hpp"
 
-void _skip_line(std::string &msg)
+void skip_line(std::string &msg)
 {
 	size_t pos = msg.find_first_of("\r\n");
 	if (pos != std::string::npos) {

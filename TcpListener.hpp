@@ -42,12 +42,12 @@ public:
 	Client&			get_client(int client_fd);
 	Client&			get_client(std::string	&nick);
 	std::string 	get_user_modes() { return _user_modes; }
-	bool 			_nickname_available(std::string &nick);
+	bool 			nickname_available(std::string &nick);
 	std::map<std::string, Channel *>& get_channels() { return _channels; }
 	void 			add_channel(Channel *channel);
 	void 			print_channels();
-	Channel*		_is_channel(std::basic_string<char> chan_name);
-	void			_disconnect_client(Client &client, std::string msg);
+	Channel*		is_channel(std::basic_string<char> chan_name);
+	void			disconnect_client(Client &client, std::string msg);
 private:
     int             _CreateSocket() const;
     void            _WaitForConnection(int listening_fd);
@@ -59,12 +59,12 @@ private:
 	int 			_read_data(int fd, char *buf, std::string& buffer);
 	int 			_handle_message(int i);
 	void			_exec_command(Client &client, const std::string& cmd, std::vector<std::string> &params);
-	void			_handle_msg(Client &client, std::string type, std::vector<std::string> &params);
+	void 			_handle_msg(Client &client, std::string type, std::vector<std::string> &params);
 	void			_part_channel(Client &client,  std::string chan);
 
     std::string                 		_ipAddress;
 	std::string							_password;
-			int                         _port;
+	int		                            _port;
     std::list<Client *>     			_clients;
 	int     							_nfds;
 	struct pollfd       				_fds[10];
